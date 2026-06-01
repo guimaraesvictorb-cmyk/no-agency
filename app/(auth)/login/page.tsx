@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react"
+import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
+import { createClient } from "@/lib/supabase/client"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -17,8 +18,22 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError("")
-    await new Promise((r) => setTimeout(r, 800))
-    // Demo: always go to dashboard
+
+    const supabase = createClient()
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (authError) {
+      setError(
+        authError.message === "Email not confirmed"
+          ? "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada."
+          : authError.message === "Invalid login credentials"
+          ? "E-mail ou senha incorretos."
+          : authError.message
+      )
+      setLoading(false)
+      return
+    }
+
     window.location.href = "/dashboard"
   }
 
