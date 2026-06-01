@@ -1,73 +1,150 @@
-import Link from "next/link"
-import { ArrowRight, CheckCircle, Sparkles, CalendarDays, Send, BarChart3, Shield, Zap, Star } from "lucide-react"
+"use client"
 
+import { useState } from "react"
+import Link from "next/link"
+import {
+  ArrowRight, CheckCircle, Sparkles, CalendarDays,
+  Send, BarChart3, Zap, Star, Menu, X,
+} from "lucide-react"
+import LogoCluster from "@/components/ui/LogoCluster"
+
+// ─── Navbar ──────────────────────────────────────────────────────────────────
 function NavBar() {
+  const [open, setOpen] = useState(false)
+  const links = [
+    { label: "Como funciona", href: "#como-funciona" },
+    { label: "Planos", href: "#planos" },
+    { label: "Resultados", href: "#resultados" },
+  ]
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 glass border-b border-border/30">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-signal rounded-lg flex items-center justify-center">
-          <span className="text-cream font-bebas text-lg">N</span>
+    <nav className="fixed top-0 left-0 right-0 z-50"
+      style={{ background: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <LogoCluster size={30} variant="dark" />
+          <div className="flex flex-col leading-none">
+            <div className="flex items-center gap-1 text-white font-bold text-[13px]">
+              NO <span className="w-1 h-1 rounded-full bg-signal inline-block" />
+            </div>
+            <div className="text-white font-light text-[13px]">AGENCY</div>
+          </div>
         </div>
-        <span className="font-bebas text-xl text-cream tracking-widest">NO AGENCY</span>
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-8">
+          {links.map((l) => (
+            <a key={l.href} href={l.href}
+              className="text-[13px] text-stone hover:text-white transition-colors">
+              {l.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Desktop CTA */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link href="/login"
+            className="text-[13px] text-stone hover:text-white transition-colors">
+            Entrar
+          </Link>
+          <a href="#contato"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: "var(--signal)" }}>
+            Começar Agora <ArrowRight size={13} />
+          </a>
+        </div>
+
+        {/* Mobile hamburger */}
+        <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-stone hover:text-white">
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
-      <div className="hidden md:flex items-center gap-8 text-sm text-stone">
-        <a href="#como-funciona" className="hover:text-cream transition-colors">Como funciona</a>
-        <a href="#planos" className="hover:text-cream transition-colors">Planos</a>
-        <a href="#resultados" className="hover:text-cream transition-colors">Resultados</a>
-      </div>
-      <Link
-        href="/login"
-        className="bg-signal text-cream px-4 py-2 rounded-lg text-sm font-medium hover:bg-signal-dark transition-colors"
-      >
-        Entrar →
-      </Link>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden px-5 pb-5 space-y-1"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          {links.map((l) => (
+            <a key={l.href} href={l.href} onClick={() => setOpen(false)}
+              className="block py-3 text-[14px] text-stone hover:text-white transition-colors"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              {l.label}
+            </a>
+          ))}
+          <div className="pt-3 flex flex-col gap-2">
+            <Link href="/login" onClick={() => setOpen(false)}
+              className="block text-center py-3 rounded-lg text-[13px] text-white"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
+              Entrar na plataforma
+            </Link>
+            <a href="#contato" onClick={() => setOpen(false)}
+              className="block text-center py-3 rounded-lg text-[13px] font-bold text-white"
+              style={{ background: "var(--signal)" }}>
+              Começar Agora →
+            </a>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
 
+// ─── Hero ─────────────────────────────────────────────────────────────────────
 function HeroSection() {
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 pt-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-radial from-signal/5 via-transparent to-transparent" />
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="inline-flex items-center gap-2 bg-signal/10 border border-signal/20 text-signal text-sm px-4 py-2 rounded-full mb-8">
-          <Sparkles size={14} />
+    <section className="min-h-screen flex items-center justify-center px-5 pt-16 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full opacity-10 blur-3xl pointer-events-none"
+        style={{ background: "var(--signal)" }} />
+
+      <div className="max-w-4xl mx-auto text-center relative z-10 py-20">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold mb-8"
+          style={{ background: "rgba(214,64,69,0.12)", border: "1px solid rgba(214,64,69,0.3)", color: "var(--signal)" }}>
+          <Sparkles size={12} />
           Gestão de Social Media com IA
         </div>
-        <h1 className="font-bebas text-6xl md:text-8xl text-cream leading-none tracking-wide mb-6">
+
+        {/* Headline */}
+        <h1 className="font-bebas text-[64px] sm:text-[80px] md:text-[108px] leading-none tracking-wide mb-6 text-white">
           ZERO ESFORÇO.<br />
-          <span className="text-signal">RESULTADO REAL.</span>
+          <span style={{ color: "var(--signal)" }}>RESULTADO REAL.</span>
         </h1>
-        <p className="text-stone text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+
+        <p className="text-[15px] md:text-[18px] max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: "var(--stone)" }}>
           A IA cria, agenda e publica conteúdo personalizado para o Instagram e Facebook do seu negócio.
           Você só aprova — em 2 cliques, no celular.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="#planos"
-            className="inline-flex items-center justify-center gap-2 bg-signal text-cream px-8 py-4 rounded-xl text-base font-medium hover:bg-signal-dark transition-all hover:scale-105 active:scale-100"
-          >
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#contato"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-[14px] font-bold text-white transition-all hover:opacity-90 hover:-translate-y-px active:translate-y-0"
+            style={{ background: "var(--signal)" }}>
             Começar Agora
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </a>
-          <a
-            href="#como-funciona"
-            className="inline-flex items-center justify-center gap-2 bg-ink-2 border border-border text-cream px-8 py-4 rounded-xl text-base font-medium hover:bg-ink-3 transition-colors"
-          >
+          <a href="#como-funciona"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-[14px] font-medium text-white transition-colors hover:opacity-80"
+            style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
             Ver como funciona
           </a>
         </div>
 
         {/* Social proof */}
-        <div className="flex items-center justify-center gap-8 mt-12 text-sm text-stone">
+        <div className="flex items-center justify-center gap-6 sm:gap-10 mt-14">
           {[
             { value: "+50", label: "clientes ativos" },
             { value: "8h", label: "economizadas/semana" },
             { value: "4.9★", label: "avaliação média" },
-          ].map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl font-bold text-cream">{s.value}</div>
-              <div className="text-xs mt-0.5">{s.label}</div>
+          ].map((s, i) => (
+            <div key={s.label} className="text-center relative">
+              {i > 0 && (
+                <div className="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 w-px h-6"
+                  style={{ background: "var(--border)" }} />
+              )}
+              <div className="font-bebas text-[32px] sm:text-[40px] leading-none text-white">{s.value}</div>
+              <div className="text-[11px] mt-0.5" style={{ color: "var(--stone)" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -76,14 +153,15 @@ function HeroSection() {
   )
 }
 
+// ─── Marquee ──────────────────────────────────────────────────────────────────
 function MarqueeBar() {
   const items = ["Instagram", "Facebook", "Conteúdo com IA", "Aprovação em 2 cliques", "Relatórios Automáticos", "Zero Esforço", "Resultado Real"]
   return (
-    <div className="bg-signal py-3 overflow-hidden">
-      <div className="flex gap-8 animate-[marquee_20s_linear_infinite]">
-        {[...items, ...items].map((item, i) => (
-          <span key={i} className="text-cream font-bebas text-lg tracking-widest whitespace-nowrap flex-shrink-0">
-            {item} ·
+    <div className="py-3 overflow-hidden" style={{ background: "var(--signal)" }}>
+      <div className="flex gap-8 animate-marquee">
+        {[...items, ...items, ...items].map((item, i) => (
+          <span key={i} className="font-bebas text-[15px] tracking-widest whitespace-nowrap flex-shrink-0 text-white opacity-90">
+            {item} <span className="opacity-50">·</span>
           </span>
         ))}
       </div>
@@ -91,33 +169,39 @@ function MarqueeBar() {
   )
 }
 
+// ─── How it works ─────────────────────────────────────────────────────────────
 function HowItWorksSection() {
   const steps = [
-    { n: "01", icon: Sparkles, title: "DNA da Marca", desc: "Em 3 minutos, você preenche o DNA do negócio: tom de voz, público, temas. A IA aprende." },
-    { n: "02", icon: CalendarDays, title: "IA Cria o Conteúdo", desc: "Todo mês, a IA gera posts completos: texto, sugestão de imagem, hashtags e horário ideal." },
-    { n: "03", icon: CheckCircle, title: "Você Aprova", desc: "Recebe um link por e-mail. Aprova os posts em 2 cliques, no celular, sem precisar logar." },
-    { n: "04", icon: Send, title: "Publicação Automática", desc: "Posts aprovados são publicados automaticamente no Instagram e Facebook no horário certo." },
-    { n: "05", icon: BarChart3, title: "Relatório Semanal", desc: "Todo final de semana, você recebe um relatório com alcance, engajamento e insights da IA." },
+    { n: "01", icon: Sparkles,    title: "DNA da Marca",          desc: "Em 3 minutos, você preenche o DNA do negócio: tom de voz, público e temas. A IA aprende." },
+    { n: "02", icon: CalendarDays, title: "IA Cria o Conteúdo",   desc: "Todo mês, a IA gera posts completos: texto, sugestão de imagem, hashtags e horário ideal." },
+    { n: "03", icon: CheckCircle,  title: "Você Aprova",          desc: "Recebe um link por e-mail. Aprova os posts em 2 cliques, no celular, sem precisar logar." },
+    { n: "04", icon: Send,         title: "Publicação Automática", desc: "Posts aprovados são publicados automaticamente no Instagram e Facebook no horário certo." },
+    { n: "05", icon: BarChart3,    title: "Relatório Semanal",    desc: "Todo final de semana, você recebe um relatório com alcance, engajamento e insights da IA." },
   ]
-
   return (
-    <section id="como-funciona" className="py-24 px-6">
+    <section id="como-funciona" className="py-20 md:py-28 px-5">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-bebas text-5xl text-cream tracking-wide mb-4">COMO FUNCIONA</h2>
-          <p className="text-stone text-lg max-w-xl mx-auto">Um fluxo completo de gestão de conteúdo, do zero à publicação, sem você precisar fazer nada.</p>
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="font-bebas text-[48px] md:text-[60px] text-white tracking-wide mb-3">COMO FUNCIONA</h2>
+          <p className="text-[14px] md:text-[16px] max-w-lg mx-auto" style={{ color: "var(--stone)" }}>
+            Um fluxo completo de gestão de conteúdo, do zero à publicação, sem você precisar fazer nada.
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+        {/* Steps — vertical on mobile, horizontal on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           {steps.map((step) => {
             const Icon = step.icon
             return (
-              <div key={step.n} className="bg-ink-2 border border-border rounded-2xl p-5 text-center hover:border-stone/40 transition-colors">
-                <div className="text-signal font-bebas text-3xl mb-3">{step.n}</div>
-                <div className="w-10 h-10 bg-signal/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Icon size={18} className="text-signal" />
+              <div key={step.n} className="rounded-2xl p-5 text-center transition-all hover:border-stone/40"
+                style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+                <div className="font-bebas text-[32px] leading-none mb-3" style={{ color: "var(--signal)" }}>{step.n}</div>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
+                  style={{ background: "rgba(214,64,69,0.12)" }}>
+                  <Icon size={17} style={{ color: "var(--signal)" }} />
                 </div>
-                <h3 className="font-semibold text-cream text-sm mb-2">{step.title}</h3>
-                <p className="text-xs text-stone leading-relaxed">{step.desc}</p>
+                <h3 className="font-semibold text-white text-[13px] mb-2">{step.title}</h3>
+                <p className="text-[12px] leading-relaxed" style={{ color: "var(--stone)" }}>{step.desc}</p>
               </div>
             )
           })}
@@ -127,6 +211,7 @@ function HowItWorksSection() {
   )
 }
 
+// ─── Plans ────────────────────────────────────────────────────────────────────
 function PlansSection() {
   const plans = [
     {
@@ -159,48 +244,53 @@ function PlansSection() {
   ]
 
   return (
-    <section id="planos" className="py-24 px-6 bg-ink-2/30">
+    <section id="planos" className="py-20 md:py-28 px-5" style={{ background: "rgba(26,26,26,0.4)" }}>
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-bebas text-5xl text-cream tracking-wide mb-4">PLANOS</h2>
-          <p className="text-stone text-lg">Setup único + mensalidade. Sem contrato de fidelidade.</p>
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="font-bebas text-[48px] md:text-[60px] text-white tracking-wide mb-3">PLANOS</h2>
+          <p className="text-[14px] md:text-[16px]" style={{ color: "var(--stone)" }}>
+            Setup único + mensalidade. Sem contrato de fidelidade.
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl p-6 border relative ${
-                plan.highlight
-                  ? "bg-signal/5 border-signal/40"
-                  : "bg-ink-2 border-border"
-              }`}
-            >
+            <div key={plan.name} className="rounded-2xl p-6 relative flex flex-col"
+              style={plan.highlight
+                ? { background: "rgba(214,64,69,0.07)", border: "1px solid rgba(214,64,69,0.4)" }
+                : { background: "var(--ink-2)", border: "1px solid var(--border)" }
+              }>
               {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-signal text-cream text-xs font-semibold px-4 py-1 rounded-full">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-bold text-white"
+                  style={{ background: "var(--signal)" }}>
                   Mais Popular
                 </div>
               )}
-              <div className="font-bebas text-2xl text-cream mb-1">{plan.name}</div>
-              <div className="text-3xl font-bold text-cream mb-1">{plan.price}<span className="text-sm font-normal text-stone">/mês</span></div>
-              <div className="text-xs text-stone mb-4">+ {plan.setup} setup</div>
-              <div className="text-sm font-medium text-cream mb-1">{plan.posts}</div>
-              <div className="text-xs text-stone mb-5">{plan.platform}</div>
-              <div className="space-y-2.5 mb-6">
+              <div className="font-bebas text-[24px] text-white mb-1">{plan.name}</div>
+              <div className="flex items-end gap-1 mb-0.5">
+                <span className="font-bebas text-[40px] leading-none text-white">{plan.price}</span>
+                <span className="text-[13px] mb-1" style={{ color: "var(--stone)" }}>/mês</span>
+              </div>
+              <div className="text-[12px] mb-4" style={{ color: "var(--stone)" }}>+ {plan.setup} setup único</div>
+
+              <div className="text-[13px] font-semibold text-white mb-0.5">{plan.posts}</div>
+              <div className="text-[12px] mb-5" style={{ color: "var(--stone)" }}>{plan.platform}</div>
+
+              <div className="space-y-2.5 mb-6 flex-1">
                 {plan.features.map((f) => (
-                  <div key={f} className="flex items-center gap-2 text-sm text-cream/80">
-                    <CheckCircle size={14} className="text-green flex-shrink-0" />
+                  <div key={f} className="flex items-center gap-2.5 text-[13px] text-white/80">
+                    <CheckCircle size={13} style={{ color: "#10B981", flexShrink: 0 }} />
                     {f}
                   </div>
                 ))}
               </div>
-              <a
-                href="#contato"
-                className={`block text-center py-3 rounded-xl text-sm font-medium transition-all ${
-                  plan.highlight
-                    ? "bg-signal text-cream hover:bg-signal-dark"
-                    : "bg-ink-3 border border-border text-cream hover:bg-ink-4"
-                }`}
-              >
+
+              <a href="#contato"
+                className="block text-center py-3 rounded-xl text-[13px] font-bold text-white transition-all hover:opacity-90"
+                style={plan.highlight
+                  ? { background: "var(--signal)" }
+                  : { background: "var(--ink-3)", border: "1px solid var(--border)" }
+                }>
                 Contratar
               </a>
             </div>
@@ -211,27 +301,31 @@ function PlansSection() {
   )
 }
 
+// ─── Results ──────────────────────────────────────────────────────────────────
 function ResultsSection() {
   const results = [
-    { metric: "+340%", label: "Aumento de alcance orgânico", client: "Cutelaria Ferreira" },
-    { metric: "4.8%", label: "Taxa de engajamento média", client: "Evidence Ballet" },
-    { metric: "8h", label: "Economizadas por semana", client: "W2G Design" },
+    { metric: "+340%", label: "Aumento de alcance orgânico", client: "Cliente de Engenharia" },
+    { metric: "4.8%", label: "Taxa de engajamento média", client: "Cliente de Moda" },
+    { metric: "8h", label: "Economizadas por semana", client: "Cliente de Design" },
     { metric: "NPS 71", label: "Score médio dos clientes", client: "Todos os clientes" },
   ]
 
   return (
-    <section id="resultados" className="py-24 px-6">
+    <section id="resultados" className="py-20 md:py-28 px-5">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-bebas text-5xl text-cream tracking-wide mb-4">RESULTADOS</h2>
-          <p className="text-stone text-lg">Números reais de clientes que já usam a plataforma.</p>
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="font-bebas text-[48px] md:text-[60px] text-white tracking-wide mb-3">RESULTADOS</h2>
+          <p className="text-[14px] md:text-[16px]" style={{ color: "var(--stone)" }}>
+            Números reais de clientes que já usam a plataforma.
+          </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {results.map((r) => (
-            <div key={r.metric} className="bg-ink-2 border border-border rounded-2xl p-5 text-center hover:border-stone/40 transition-colors">
-              <div className="font-bebas text-4xl text-signal mb-2">{r.metric}</div>
-              <div className="text-sm text-cream mb-1">{r.label}</div>
-              <div className="text-xs text-stone">{r.client}</div>
+            <div key={r.metric} className="rounded-2xl p-5 text-center transition-all hover:border-stone/40"
+              style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+              <div className="font-bebas text-[44px] leading-none mb-2" style={{ color: "var(--signal)" }}>{r.metric}</div>
+              <div className="text-[13px] text-white mb-1">{r.label}</div>
+              <div className="text-[11px]" style={{ color: "var(--stone)" }}>{r.client}</div>
             </div>
           ))}
         </div>
@@ -240,30 +334,39 @@ function ResultsSection() {
   )
 }
 
+// ─── Testimonials ─────────────────────────────────────────────────────────────
 function TestimonialsSection() {
   const testimonials = [
-    { text: "Antes eu perdia 2 dias por semana tentando criar conteúdo. Agora recebo os posts prontos e aprovo em 5 minutos. O engajamento dobrou.", name: "Luciana M.", role: "Evidence Ballet", score: 10 },
-    { text: "Pensava que IA não capturaria o jeito da minha marca. Errei. Os posts parecem escritos por alguém que me conhece há anos.", name: "Carlos F.", role: "Cutelaria Ferreira", score: 9 },
-    { text: "Exatamente o que minha empresa precisava. Presença digital profissional sem ter que contratar uma equipe.", name: "André W.", role: "W2G Design", score: 9 },
+    { text: "Antes eu perdia 2 dias por semana tentando criar conteúdo. Agora recebo os posts prontos e aprovo em 5 minutos. O engajamento dobrou.", name: "Luciana M.", role: "Setor de Moda", score: 10 },
+    { text: "Pensava que IA não capturaria o jeito da minha marca. Errei. Os posts parecem escritos por alguém que me conhece há anos.", name: "Carlos F.", role: "Setor Industrial", score: 9 },
+    { text: "Exatamente o que minha empresa precisava. Presença digital profissional sem ter que contratar uma equipe inteira.", name: "André W.", role: "Setor de Design", score: 9 },
   ]
 
   return (
-    <section className="py-24 px-6 bg-ink-2/30">
+    <section className="py-20 md:py-28 px-5" style={{ background: "rgba(26,26,26,0.4)" }}>
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-bebas text-5xl text-cream tracking-wide mb-4">DEPOIMENTOS</h2>
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="font-bebas text-[48px] md:text-[60px] text-white tracking-wide mb-3">DEPOIMENTOS</h2>
+          <p className="text-[14px] md:text-[16px]" style={{ color: "var(--stone)" }}>
+            O que nossos clientes dizem.
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {testimonials.map((t) => (
-            <div key={t.name} className="bg-ink-2 border border-border rounded-2xl p-6">
-              <div className="flex gap-0.5 mb-4">
-                {Array.from({ length: t.score > 9 ? 5 : 4 }).map((_, i) => (
-                  <Star key={i} size={14} className="text-amber fill-amber" />
+            <div key={t.name} className="rounded-2xl p-6 flex flex-col"
+              style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+              <div className="flex gap-1 mb-4">
+                {Array.from({ length: t.score >= 10 ? 5 : 4 }).map((_, i) => (
+                  <Star key={i} size={13} fill="#F59E0B" style={{ color: "#F59E0B" }} />
                 ))}
               </div>
-              <p className="text-sm text-cream/80 italic leading-relaxed mb-4">"{t.text}"</p>
-              <div className="text-sm font-medium text-cream">{t.name}</div>
-              <div className="text-xs text-stone">{t.role}</div>
+              <p className="text-[13px] leading-relaxed flex-1 mb-5 italic" style={{ color: "rgba(240,235,227,0.8)" }}>
+                "{t.text}"
+              </p>
+              <div>
+                <div className="text-[13px] font-semibold text-white">{t.name}</div>
+                <div className="text-[11px]" style={{ color: "var(--stone)" }}>{t.role}</div>
+              </div>
             </div>
           ))}
         </div>
@@ -272,67 +375,82 @@ function TestimonialsSection() {
   )
 }
 
+// ─── CTA ──────────────────────────────────────────────────────────────────────
 function CtaSection() {
   return (
-    <section id="contato" className="py-24 px-6">
-      <div className="max-w-2xl mx-auto text-center">
-        <div className="w-16 h-16 bg-signal/15 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Zap size={28} className="text-signal" />
+    <section id="contato" className="py-20 md:py-28 px-5">
+      <div className="max-w-lg mx-auto text-center">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          style={{ background: "rgba(214,64,69,0.15)" }}>
+          <Zap size={26} style={{ color: "var(--signal)" }} />
         </div>
-        <h2 className="font-bebas text-5xl text-cream tracking-wide mb-4">PRONTO PARA COMEÇAR?</h2>
-        <p className="text-stone text-lg mb-8">
+        <h2 className="font-bebas text-[48px] md:text-[60px] text-white tracking-wide leading-none mb-4">
+          PRONTO PARA<br />COMEÇAR?
+        </h2>
+        <p className="text-[14px] md:text-[16px] mb-8" style={{ color: "var(--stone)" }}>
           Setup em 3 minutos. Primeiro lote de posts em 24 horas. Sem burocracia.
         </p>
-        <div className="bg-ink-2 border border-border rounded-2xl p-6 space-y-3">
-          <input
-            type="text"
-            placeholder="Nome do negócio"
-            className="w-full bg-ink-3 border border-border rounded-xl px-4 py-3 text-sm text-cream placeholder:text-stone focus:outline-none focus:border-stone"
-          />
-          <input
-            type="email"
-            placeholder="Seu e-mail"
-            className="w-full bg-ink-3 border border-border rounded-xl px-4 py-3 text-sm text-cream placeholder:text-stone focus:outline-none focus:border-stone"
-          />
-          <input
-            type="tel"
-            placeholder="WhatsApp"
-            className="w-full bg-ink-3 border border-border rounded-xl px-4 py-3 text-sm text-cream placeholder:text-stone focus:outline-none focus:border-stone"
-          />
-          <button className="w-full bg-signal text-cream py-4 rounded-xl text-base font-medium hover:bg-signal-dark transition-all hover:scale-[1.02] active:scale-100">
+
+        <div className="rounded-2xl p-5 space-y-3"
+          style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+          {[
+            { type: "text",  placeholder: "Nome do negócio" },
+            { type: "email", placeholder: "Seu e-mail" },
+            { type: "tel",   placeholder: "WhatsApp" },
+          ].map((f) => (
+            <input key={f.placeholder}
+              type={f.type}
+              placeholder={f.placeholder}
+              className="w-full px-4 py-3.5 text-[13px] text-white placeholder:text-stone/50 rounded-xl outline-none focus:border-signal transition-colors"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+            />
+          ))}
+          <button
+            className="w-full py-4 rounded-xl text-[14px] font-bold text-white transition-all hover:opacity-90 hover:-translate-y-px active:translate-y-0"
+            style={{ background: "var(--signal)" }}>
             Quero Começar Agora →
           </button>
-          <p className="text-xs text-stone">Entraremos em contato em até 2 horas.</p>
+          <p className="text-[11px]" style={{ color: "var(--stone)" }}>
+            Entraremos em contato em até 2 horas.
+          </p>
         </div>
       </div>
     </section>
   )
 }
 
+// ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="border-t border-border py-8 px-6">
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-stone">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-signal rounded flex items-center justify-center">
-            <span className="text-cream font-bebas text-sm">N</span>
+    <footer className="px-5 py-8" style={{ borderTop: "1px solid var(--border)" }}>
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
+        <div className="flex items-center gap-2.5">
+          <LogoCluster size={24} variant="dark" />
+          <div className="flex flex-col leading-none">
+            <div className="flex items-center gap-1 text-white font-bold text-[11px]">
+              NO <span className="w-1 h-1 rounded-full bg-signal inline-block" />
+            </div>
+            <div className="text-white font-light text-[11px]">AGENCY</div>
           </div>
-          <span className="font-bebas text-base text-cream tracking-widest">NO AGENCY</span>
         </div>
         <div className="flex gap-6">
-          <a href="#" className="hover:text-cream transition-colors">Privacidade</a>
-          <a href="#" className="hover:text-cream transition-colors">Termos</a>
-          <Link href="/login" className="hover:text-cream transition-colors">Entrar</Link>
+          {["Privacidade", "Termos"].map((l) => (
+            <a key={l} href="#" className="text-[12px] text-stone hover:text-white transition-colors">{l}</a>
+          ))}
+          <Link href="/login" className="text-[12px] text-stone hover:text-white transition-colors">Entrar</Link>
         </div>
-        <div className="text-xs text-stone/50">© 2026 No Agency. Todos os direitos reservados.</div>
+        <div className="text-[11px]" style={{ color: "rgba(138,133,130,0.5)" }}>
+          © 2026 No Agency. Todos os direitos reservados.
+        </div>
       </div>
     </footer>
   )
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div className="bg-ink text-cream">
+    <div style={{ background: "var(--ink)", color: "var(--cream)" }}>
       <NavBar />
       <HeroSection />
       <MarqueeBar />
