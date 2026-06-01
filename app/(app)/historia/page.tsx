@@ -2,20 +2,51 @@
 
 import { useState } from "react"
 import { Sparkles, Building2, Users, MessageCircle, Settings, Save, RefreshCw } from "lucide-react"
-import Card from "@/components/ui/Card"
-import Input from "@/components/ui/Input"
-import Textarea from "@/components/ui/Textarea"
-import Button from "@/components/ui/Button"
-import Badge from "@/components/ui/Badge"
 import { mockDnaBrief } from "@/lib/mock-data"
 import { DAYS_PT } from "@/lib/utils"
 
 const BLOCKS = [
-  { id: "empresa", label: "Empresa", icon: Building2, color: "text-signal" },
-  { id: "cliente", label: "Cliente Ideal", icon: Users, color: "text-blue" },
-  { id: "tom", label: "Tom de Voz", icon: MessageCircle, color: "text-green" },
-  { id: "operacional", label: "Operacional", icon: Settings, color: "text-amber" },
+  { id: "empresa", label: "Empresa", icon: Building2, accent: "var(--signal)" },
+  { id: "cliente", label: "Cliente Ideal", icon: Users, accent: "var(--blue)" },
+  { id: "tom", label: "Tom de Voz", icon: MessageCircle, accent: "var(--green)" },
+  { id: "operacional", label: "Operacional", icon: Settings, accent: "var(--amber)" },
 ]
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-stone mb-2">
+      {children}
+    </label>
+  )
+}
+
+function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
+      style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+    />
+  )
+}
+
+function TextArea({ value, onChange, rows = 3, hint }: { value: string; onChange: (v: string) => void; rows?: number; hint?: string }) {
+  return (
+    <div>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+        className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors resize-none"
+        style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+      />
+      {hint && <p className="text-[11px] text-stone mt-1">{hint}</p>}
+    </div>
+  )
+}
 
 export default function HistoriaPage() {
   const [brief, setBrief] = useState(mockDnaBrief)
@@ -44,149 +75,146 @@ export default function HistoriaPage() {
     setNewTheme("")
   }
 
-  const removeTheme = (theme: string) => {
-    setBrief((prev) => ({ ...prev, content_themes: prev.content_themes.filter((t) => t !== theme) }))
-  }
+  const activeBlockData = BLOCKS.find((b) => b.id === activeBlock)!
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles size={18} className="text-signal" />
-            <h2 className="text-lg font-semibold text-cream">DNA da Marca</h2>
-            <Badge variant="info">v{brief.version}</Badge>
-          </div>
-          <p className="text-sm text-stone">
-            O documento vivo que alimenta toda a geração de conteúdo com IA.
+          <h1 className="font-bebas text-[40px] text-white leading-none mb-1">Sua História</h1>
+          <p className="text-[13px] text-stone">
+            O DNA da marca alimenta toda geração de conteúdo com IA ·{" "}
+            <span className="text-white/60">v{brief.version}</span>
           </p>
         </div>
-        <Button onClick={handleSave} loading={saving} size="sm">
-          <Save size={14} />
-          Salvar
-        </Button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-px disabled:opacity-50"
+          style={{ background: "var(--signal)" }}
+        >
+          {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
+          {saving ? "Salvando..." : "Salvar"}
+        </button>
       </div>
 
       {/* Block tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2">
         {BLOCKS.map((block) => {
           const Icon = block.icon
+          const active = activeBlock === block.id
           return (
             <button
               key={block.id}
               onClick={() => setActiveBlock(block.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeBlock === block.id
-                  ? "bg-ink-2 border border-border text-cream"
-                  : "text-stone hover:text-cream hover:bg-ink-3"
-              }`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all"
+              style={active
+                ? { background: "rgba(214,64,69,0.14)", border: "1px solid rgba(214,64,69,0.3)", color: "var(--cream)" }
+                : { background: "var(--ink-2)", border: "1px solid var(--border)", color: "var(--stone)" }
+              }
             >
-              <Icon size={14} className={block.color} />
+              <Icon size={13} style={{ color: active ? block.accent : "var(--stone)" }} />
               {block.label}
             </button>
           )
         })}
       </div>
 
-      {/* Block: Empresa */}
-      {activeBlock === "empresa" && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 size={16} className="text-signal" />
-            <h3 className="font-semibold text-cream">Bloco 1 — Empresa</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Nome da Empresa"
-              value={brief.company_name}
-              onChange={(e) => setBrief((p) => ({ ...p, company_name: e.target.value }))}
-            />
-            <Input
-              label="Segmento / Nicho"
-              value={brief.segment}
-              onChange={(e) => setBrief((p) => ({ ...p, segment: e.target.value }))}
-            />
-            <Input
-              label="Cidade"
-              value={brief.city}
-              onChange={(e) => setBrief((p) => ({ ...p, city: e.target.value }))}
-            />
-          </div>
-          <Textarea
-            label="Diferenciais Competitivos"
-            value={brief.differentials}
-            onChange={(e) => setBrief((p) => ({ ...p, differentials: e.target.value }))}
-            rows={4}
-            hint="Descreva o que torna sua empresa única no mercado."
-          />
-        </Card>
-      )}
+      {/* Active block */}
+      <div className="rounded-xl p-6 space-y-5"
+        style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+        <div className="flex items-center gap-2 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+          <activeBlockData.icon size={15} style={{ color: activeBlockData.accent }} />
+          <span className="text-[13px] font-semibold text-white">
+            {activeBlock === "empresa" && "Bloco 1 — Empresa"}
+            {activeBlock === "cliente" && "Bloco 2 — Cliente Ideal"}
+            {activeBlock === "tom" && "Bloco 3 — Tom de Voz"}
+            {activeBlock === "operacional" && "Bloco 4 — Operacional"}
+          </span>
+        </div>
 
-      {/* Block: Cliente Ideal */}
-      {activeBlock === "cliente" && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Users size={16} className="text-blue" />
-            <h3 className="font-semibold text-cream">Bloco 2 — Cliente Ideal</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Faixa Etária"
-              value={brief.ideal_client_age}
-              onChange={(e) => setBrief((p) => ({ ...p, ideal_client_age: e.target.value }))}
-              placeholder="Ex: 28-45 anos"
-            />
-            <Input
-              label="Gênero"
-              value={brief.ideal_client_gender}
-              onChange={(e) => setBrief((p) => ({ ...p, ideal_client_gender: e.target.value }))}
-              placeholder="Ex: Feminino, Masculino ou Qualquer"
-            />
-          </div>
-          <Textarea
-            label="Maior Dor / Problema"
-            value={brief.ideal_client_pain}
-            onChange={(e) => setBrief((p) => ({ ...p, ideal_client_pain: e.target.value }))}
-            rows={3}
-            hint="O que mantém seu cliente acordado à noite?"
-          />
-          <Textarea
-            label="Sonho / Desejo"
-            value={brief.ideal_client_dream}
-            onChange={(e) => setBrief((p) => ({ ...p, ideal_client_dream: e.target.value }))}
-            rows={3}
-            hint="O que seu cliente quer conquistas com seu produto/serviço?"
-          />
-        </Card>
-      )}
-
-      {/* Block: Tom de Voz */}
-      {activeBlock === "tom" && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <MessageCircle size={16} className="text-green" />
-            <h3 className="font-semibold text-cream">Bloco 3 — Tom de Voz</h3>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-cream/80 block mb-2">Adjetivos do Tom</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {brief.tone_adjectives.map((adj) => (
-                <button
-                  key={adj}
-                  onClick={() =>
-                    setBrief((p) => ({ ...p, tone_adjectives: p.tone_adjectives.filter((a) => a !== adj) }))
-                  }
-                  className="bg-green/10 text-green border border-green/20 text-xs px-2.5 py-1 rounded-full hover:bg-signal/10 hover:text-signal hover:border-signal/20 transition-colors"
-                >
-                  {adj} ×
-                </button>
-              ))}
+        {activeBlock === "empresa" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>Nome da Empresa</FieldLabel>
+                <TextInput value={brief.company_name} onChange={(v) => setBrief((p) => ({ ...p, company_name: v }))} />
+              </div>
+              <div>
+                <FieldLabel>Segmento / Nicho</FieldLabel>
+                <TextInput value={brief.segment} onChange={(v) => setBrief((p) => ({ ...p, segment: v }))} />
+              </div>
+              <div>
+                <FieldLabel>Cidade</FieldLabel>
+                <TextInput value={brief.city} onChange={(v) => setBrief((p) => ({ ...p, city: v }))} />
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div>
+              <FieldLabel>Diferenciais Competitivos</FieldLabel>
+              <TextArea
+                value={brief.differentials}
+                onChange={(v) => setBrief((p) => ({ ...p, differentials: v }))}
+                rows={4}
+                hint="Descreva o que torna sua empresa única no mercado."
+              />
+            </div>
+          </div>
+        )}
+
+        {activeBlock === "cliente" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>Faixa Etária</FieldLabel>
+                <TextInput value={brief.ideal_client_age} onChange={(v) => setBrief((p) => ({ ...p, ideal_client_age: v }))} placeholder="Ex: 28-45 anos" />
+              </div>
+              <div>
+                <FieldLabel>Gênero</FieldLabel>
+                <TextInput value={brief.ideal_client_gender} onChange={(v) => setBrief((p) => ({ ...p, ideal_client_gender: v }))} placeholder="Ex: Masculino, Feminino ou Qualquer" />
+              </div>
+            </div>
+            <div>
+              <FieldLabel>Maior Dor / Problema</FieldLabel>
+              <TextArea
+                value={brief.ideal_client_pain}
+                onChange={(v) => setBrief((p) => ({ ...p, ideal_client_pain: v }))}
+                rows={3}
+                hint="O que mantém seu cliente acordado à noite?"
+              />
+            </div>
+            <div>
+              <FieldLabel>Sonho / Desejo</FieldLabel>
+              <TextArea
+                value={brief.ideal_client_dream}
+                onChange={(v) => setBrief((p) => ({ ...p, ideal_client_dream: v }))}
+                rows={3}
+                hint="O que seu cliente quer conquistar com seu produto/serviço?"
+              />
+            </div>
+          </div>
+        )}
+
+        {activeBlock === "tom" && (
+          <div className="space-y-4">
+            <div>
+              <FieldLabel>Adjetivos do Tom</FieldLabel>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {brief.tone_adjectives.map((adj) => (
+                  <button
+                    key={adj}
+                    onClick={() => setBrief((p) => ({ ...p, tone_adjectives: p.tone_adjectives.filter((a) => a !== adj) }))}
+                    className="text-[11px] font-semibold px-3 py-1 rounded-full transition-colors"
+                    style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)", color: "var(--green)" }}
+                  >
+                    {adj} ×
+                  </button>
+                ))}
+              </div>
               <input
-                className="flex-1 bg-ink-3 border border-border rounded-lg px-3 py-2 text-sm text-cream placeholder:text-stone focus:outline-none focus:border-stone"
-                placeholder="Adicionar adjetivo..."
+                className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
+                style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+                placeholder="Adicionar adjetivo... (Enter para confirmar)"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const val = (e.target as HTMLInputElement).value.trim()
@@ -198,127 +226,127 @@ export default function HistoriaPage() {
                 }}
               />
             </div>
+            <div>
+              <FieldLabel>O que evitar no tom</FieldLabel>
+              <TextArea value={brief.tone_avoid} onChange={(v) => setBrief((p) => ({ ...p, tone_avoid: v }))} rows={2} />
+            </div>
+            <div>
+              <FieldLabel>Exemplo de frase ideal</FieldLabel>
+              <TextArea
+                value={brief.tone_example}
+                onChange={(v) => setBrief((p) => ({ ...p, tone_example: v }))}
+                rows={3}
+                hint="Escreva uma frase que capture perfeitamente o tom da marca."
+              />
+            </div>
           </div>
-          <Textarea
-            label="O que evitar no tom"
-            value={brief.tone_avoid}
-            onChange={(e) => setBrief((p) => ({ ...p, tone_avoid: e.target.value }))}
-            rows={2}
-          />
-          <Textarea
-            label="Exemplo de frase ideal"
-            value={brief.tone_example}
-            onChange={(e) => setBrief((p) => ({ ...p, tone_example: e.target.value }))}
-            rows={3}
-            hint="Escreva uma frase que capture perfeitamente o tom da marca."
-          />
-        </Card>
-      )}
+        )}
 
-      {/* Block: Operacional */}
-      {activeBlock === "operacional" && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Settings size={16} className="text-amber" />
-            <h3 className="font-semibold text-cream">Bloco 4 — Operacional</h3>
-          </div>
+        {activeBlock === "operacional" && (
+          <div className="space-y-5">
+            <div>
+              <FieldLabel>Dias de Postagem</FieldLabel>
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(DAYS_PT).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleDay(key)}
+                    className="px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all"
+                    style={brief.posting_days.includes(key)
+                      ? { background: "var(--signal)", color: "var(--cream)", border: "1px solid var(--signal)" }
+                      : { background: "var(--ink-3)", color: "var(--stone)", border: "1px solid var(--border)" }
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-cream/80 block mb-2">Dias de Postagem</label>
-            <div className="flex gap-2 flex-wrap">
-              {Object.entries(DAYS_PT).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => toggleDay(key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    brief.posting_days.includes(key)
-                      ? "bg-signal text-cream"
-                      : "bg-ink-3 text-stone border border-border hover:border-stone/40"
-                  }`}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>Frequência Semanal</FieldLabel>
+                <input
+                  type="number" min={1} max={7}
+                  value={brief.posting_frequency}
+                  onChange={(e) => setBrief((p) => ({ ...p, posting_frequency: parseInt(e.target.value) }))}
+                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none focus:border-signal transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+                />
+              </div>
+              <div>
+                <FieldLabel>Plataforma</FieldLabel>
+                <select
+                  value={brief.platform}
+                  onChange={(e) => setBrief((p) => ({ ...p, platform: e.target.value as any }))}
+                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none focus:border-signal transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
                 >
-                  {label}
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="instagram_facebook">Instagram + Facebook</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <FieldLabel>Temas de Conteúdo</FieldLabel>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {brief.content_themes.map((theme) => (
+                  <span key={theme} className="flex items-center gap-1 text-[11px] px-3 py-1 rounded-full"
+                    style={{ background: "var(--ink-3)", border: "1px solid var(--border)", color: "var(--cream)" }}>
+                    {theme}
+                    <button onClick={() => setBrief((p) => ({ ...p, content_themes: p.content_themes.filter((t) => t !== theme) }))}
+                      className="text-stone hover:text-signal ml-0.5">×</button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={newTheme}
+                  onChange={(e) => setNewTheme(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") addTheme() }}
+                  className="flex-1 px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+                  placeholder="Novo tema..."
+                />
+                <button onClick={addTheme}
+                  className="px-4 py-3 rounded-lg text-[12px] font-semibold text-white transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
+                  Adicionar
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-cream/80 block mb-1.5">Frequência Semanal</label>
-              <input
-                type="number"
-                min={1}
-                max={7}
-                value={brief.posting_frequency}
-                onChange={(e) => setBrief((p) => ({ ...p, posting_frequency: parseInt(e.target.value) }))}
-                className="w-full bg-ink-3 border border-border rounded-lg px-3 py-2.5 text-sm text-cream focus:outline-none focus:border-stone"
+              <FieldLabel>Notas para a IA</FieldLabel>
+              <TextArea
+                value={brief.ai_notes ?? ""}
+                onChange={(v) => setBrief((p) => ({ ...p, ai_notes: v }))}
+                rows={3}
+                hint="Instruções especiais que a IA deve considerar na geração de conteúdo."
               />
             </div>
-            <div>
-              <label className="text-sm font-medium text-cream/80 block mb-1.5">Plataforma</label>
-              <select
-                value={brief.platform}
-                onChange={(e) => setBrief((p) => ({ ...p, platform: e.target.value as any }))}
-                className="w-full bg-ink-3 border border-border rounded-lg px-3 py-2.5 text-sm text-cream focus:outline-none focus:border-stone"
-              >
-                <option value="instagram">Instagram</option>
-                <option value="facebook">Facebook</option>
-                <option value="instagram_facebook">Instagram + Facebook</option>
-              </select>
-            </div>
           </div>
+        )}
+      </div>
 
-          <div>
-            <label className="text-sm font-medium text-cream/80 block mb-2">Temas de Conteúdo</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {brief.content_themes.map((theme) => (
-                <span
-                  key={theme}
-                  className="flex items-center gap-1 bg-ink-3 border border-border text-xs text-cream px-2.5 py-1 rounded-full"
-                >
-                  {theme}
-                  <button onClick={() => removeTheme(theme)} className="text-stone hover:text-signal">×</button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                value={newTheme}
-                onChange={(e) => setNewTheme(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") addTheme() }}
-                className="flex-1 bg-ink-3 border border-border rounded-lg px-3 py-2 text-sm text-cream placeholder:text-stone focus:outline-none focus:border-stone"
-                placeholder="Novo tema..."
-              />
-              <Button onClick={addTheme} size="sm" variant="secondary">Adicionar</Button>
-            </div>
-          </div>
-
-          <Textarea
-            label="Notas para a IA"
-            value={brief.ai_notes ?? ""}
-            onChange={(e) => setBrief((p) => ({ ...p, ai_notes: e.target.value }))}
-            rows={3}
-            hint="Instruções especiais que a IA deve considerar na geração de conteúdo."
-          />
-        </Card>
-      )}
-
-      {/* AI Generate preview */}
-      <Card className="border-signal/20 bg-signal/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-signal/15 rounded-lg">
-            <RefreshCw size={16} className="text-signal" />
-          </div>
-          <div className="flex-1">
-            <div className="text-sm font-medium text-cream">Gerar Conteúdo com IA</div>
-            <div className="text-xs text-stone">Baseado no DNA atual, a IA vai criar os posts da próxima semana.</div>
-          </div>
-          <Button variant="primary" size="sm">
-            <Sparkles size={14} />
-            Gerar Agora
-          </Button>
+      {/* AI Generate */}
+      <div className="flex items-center gap-4 px-5 py-4 rounded-xl"
+        style={{ background: "rgba(214,64,69,0.08)", border: "1px solid rgba(214,64,69,0.22)" }}>
+        <div className="p-2.5 rounded-lg" style={{ background: "rgba(214,64,69,0.15)" }}>
+          <Sparkles size={16} style={{ color: "var(--signal)" }} />
         </div>
-      </Card>
+        <div className="flex-1">
+          <div className="text-[13px] font-semibold text-white">Gerar Conteúdo com IA</div>
+          <div className="text-[11px] text-stone">Baseado no DNA atual, a IA vai criar os posts da próxima semana.</div>
+        </div>
+        <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white"
+          style={{ background: "var(--signal)" }}>
+          <Sparkles size={13} />
+          Gerar Agora
+        </button>
+      </div>
     </div>
   )
 }

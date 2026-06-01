@@ -2,11 +2,7 @@
 
 import { useState } from "react"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
-import Card from "@/components/ui/Card"
-import Badge from "@/components/ui/Badge"
-import Button from "@/components/ui/Button"
 import { mockPosts, mockClients } from "@/lib/mock-data"
-import { POST_STATUS_LABELS } from "@/lib/utils"
 import type { Post } from "@/lib/types"
 
 function getDaysInMonth(year: number, month: number) {
@@ -18,22 +14,30 @@ function getFirstDayOfMonth(year: number, month: number) {
 
 const MONTH_NAMES_PT = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
 ]
 const DAY_NAMES = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]
 
-function statusDot(status: string): string {
-  const colors: Record<string, string> = {
-    draft: "bg-ink-4",
-    generated: "bg-blue",
-    sent_for_approval: "bg-amber",
-    approved: "bg-green",
-    rejected: "bg-signal",
-    scheduled: "bg-blue",
-    published: "bg-green",
-    auto_approved: "bg-green",
-  }
-  return colors[status] ?? "bg-stone"
+const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+  draft:             { bg: "rgba(58,58,58,0.7)",      text: "#8A8582", dot: "#3A3A3A" },
+  generated:         { bg: "rgba(99,102,241,0.15)",   text: "#6366F1", dot: "#6366F1" },
+  sent_for_approval: { bg: "rgba(245,158,11,0.15)",   text: "#F59E0B", dot: "#F59E0B" },
+  approved:          { bg: "rgba(16,185,129,0.15)",   text: "#10B981", dot: "#10B981" },
+  rejected:          { bg: "rgba(214,64,69,0.15)",    text: "#D64045", dot: "#D64045" },
+  scheduled:         { bg: "rgba(99,102,241,0.15)",   text: "#6366F1", dot: "#6366F1" },
+  published:         { bg: "rgba(16,185,129,0.15)",   text: "#10B981", dot: "#10B981" },
+  auto_approved:     { bg: "rgba(16,185,129,0.15)",   text: "#10B981", dot: "#10B981" },
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Rascunho",
+  generated: "Gerado",
+  sent_for_approval: "Aguardando",
+  approved: "Aprovado",
+  rejected: "Rejeitado",
+  scheduled: "Agendado",
+  published: "Publicado",
+  auto_approved: "Auto-aprovado",
 }
 
 export default function CalendarioPage() {
@@ -69,106 +73,127 @@ export default function CalendarioPage() {
   const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={prevMonth} className="p-2 rounded-lg text-stone hover:text-cream hover:bg-ink-3 transition-colors">
-            <ChevronLeft size={16} />
-          </button>
-          <h2 className="text-base font-semibold text-cream min-w-[180px] text-center">
-            {MONTH_NAMES_PT[month]} {year}
-          </h2>
-          <button onClick={nextMonth} className="p-2 rounded-lg text-stone hover:text-cream hover:bg-ink-3 transition-colors">
-            <ChevronRight size={16} />
-          </button>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="font-bebas text-[40px] text-white leading-none">Calendário Editorial</h1>
+            <p className="text-[13px] text-stone">{MONTH_NAMES_PT[month]} {year}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={prevMonth}
+              className="p-2 rounded-lg text-stone hover:text-white transition-colors"
+              style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+              <ChevronLeft size={16} />
+            </button>
+            <button onClick={nextMonth}
+              className="p-2 rounded-lg text-stone hover:text-white transition-colors"
+              style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
-        <Button size="sm">
-          <Plus size={14} />
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white"
+          style={{ background: "var(--signal)" }}>
+          <Plus size={13} />
           Novo Post
-        </Button>
+        </button>
       </div>
 
-      <Card padding="none">
-        {/* Header */}
-        <div className="grid grid-cols-7 border-b border-border">
+      {/* Legend */}
+      <div className="flex items-center gap-4 flex-wrap">
+        {(["sent_for_approval","approved","scheduled","published"] as const).map((s) => (
+          <div key={s} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[s].dot }} />
+            <span className="text-[11px] text-stone">{STATUS_LABELS[s]}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar */}
+      <div className="rounded-xl overflow-hidden" style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+        {/* Day names */}
+        <div className="grid grid-cols-7" style={{ borderBottom: "1px solid var(--border)" }}>
           {DAY_NAMES.map((d) => (
-            <div key={d} className="py-2 text-center text-xs font-medium text-stone">
+            <div key={d} className="py-3 text-center text-[11px] font-semibold uppercase tracking-wide text-stone">
               {d}
             </div>
           ))}
         </div>
 
-        {/* Days grid */}
+        {/* Days */}
         <div className="grid grid-cols-7">
-          {/* Empty cells */}
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[100px] border-r border-b border-border/50 bg-ink/30" />
+            <div key={`e-${i}`} className="min-h-[110px]" style={{ borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)", background: "rgba(10,10,10,0.3)" }} />
           ))}
 
-          {/* Day cells */}
           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
             const posts = postsByDay[day] ?? []
             const isToday = isCurrentMonth && day === today
             return (
-              <div
-                key={day}
-                className={`min-h-[100px] border-r border-b border-border/50 p-1.5 ${
-                  isToday ? "bg-signal/5" : ""
-                }`}
-              >
-                <div className={`text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                  isToday ? "bg-signal text-cream" : "text-stone"
-                }`}>
+              <div key={day} className="min-h-[110px] p-2"
+                style={{
+                  borderRight: "1px solid var(--border)",
+                  borderBottom: "1px solid var(--border)",
+                  background: isToday ? "rgba(214,64,69,0.05)" : undefined,
+                }}>
+                <div className={`text-[11px] font-semibold mb-1.5 w-6 h-6 flex items-center justify-center rounded-full ${isToday ? "text-white" : "text-stone"}`}
+                  style={isToday ? { background: "var(--signal)" } : {}}>
                   {day}
                 </div>
                 <div className="space-y-1">
-                  {posts.slice(0, 2).map((post) => (
-                    <button
-                      key={post.id}
-                      onClick={() => setSelectedPost(post)}
-                      className="w-full text-left group"
-                    >
-                      <div className="flex items-center gap-1 px-1.5 py-1 rounded bg-ink-3 hover:bg-ink-4 transition-colors border border-border/60">
-                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot(post.status)}`} />
-                        <span className="text-[10px] text-cream/80 truncate leading-tight">
-                          {clientMap[post.client_id]}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  {posts.slice(0, 2).map((post) => {
+                    const sc = STATUS_COLORS[post.status] ?? STATUS_COLORS.draft
+                    return (
+                      <button key={post.id} onClick={() => setSelectedPost(post)} className="w-full text-left">
+                        <div className="flex items-center gap-1 px-1.5 py-1 rounded-md transition-opacity hover:opacity-80"
+                          style={{ background: sc.bg, border: `1px solid ${sc.dot}22` }}>
+                          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sc.dot }} />
+                          <span className="text-[10px] truncate font-medium" style={{ color: sc.text }}>
+                            {clientMap[post.client_id]?.split(" ")[1] ?? clientMap[post.client_id]}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })}
                   {posts.length > 2 && (
-                    <div className="text-[10px] text-stone px-1.5">+{posts.length - 2} mais</div>
+                    <div className="text-[10px] text-stone px-1">+{posts.length - 2} mais</div>
                   )}
                 </div>
               </div>
             )
           })}
         </div>
-      </Card>
+      </div>
 
-      {/* Post detail side panel (modal-like) */}
+      {/* Post detail modal */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-ink/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedPost(null)}>
-          <div className="bg-ink-2 border border-border rounded-2xl p-6 max-w-md w-full shadow-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(10,10,10,0.75)", backdropFilter: "blur(8px)" }}
+          onClick={() => setSelectedPost(null)}>
+          <div className="rounded-2xl p-6 max-w-md w-full"
+            style={{ background: "var(--ink-2)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <Badge variant={
-                  selectedPost.status === "published" || selectedPost.status === "approved" ? "success" :
-                  selectedPost.status === "sent_for_approval" ? "warning" :
-                  selectedPost.status === "rejected" ? "error" : "info"
-                }>
-                  {POST_STATUS_LABELS[selectedPost.status]}
-                </Badge>
-                <div className="text-xs text-stone mt-1">{clientMap[selectedPost.client_id]}</div>
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: (STATUS_COLORS[selectedPost.status] ?? STATUS_COLORS.draft).bg,
+                    color: (STATUS_COLORS[selectedPost.status] ?? STATUS_COLORS.draft).text,
+                  }}>
+                  {STATUS_LABELS[selectedPost.status]}
+                </span>
+                <div className="text-[11px] text-stone mt-1.5">{clientMap[selectedPost.client_id]}</div>
               </div>
-              <button onClick={() => setSelectedPost(null)} className="text-stone hover:text-cream">×</button>
+              <button onClick={() => setSelectedPost(null)} className="text-stone hover:text-white text-xl leading-none">×</button>
             </div>
             {selectedPost.image_url && (
               <img src={selectedPost.image_url} alt="" className="w-full h-48 object-cover rounded-xl mb-4" />
             )}
-            <p className="text-sm text-cream/90 leading-relaxed whitespace-pre-line">{selectedPost.caption}</p>
+            <p className="text-[13px] text-white/90 leading-relaxed whitespace-pre-line">{selectedPost.caption}</p>
             {selectedPost.scheduled_for && (
-              <div className="mt-3 text-xs text-stone">
+              <div className="mt-3 text-[11px] text-stone">
                 Agendado: {new Date(selectedPost.scheduled_for).toLocaleString("pt-BR")}
               </div>
             )}
