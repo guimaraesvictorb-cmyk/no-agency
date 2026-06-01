@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -25,12 +26,18 @@ const NAV_ITEMS = [
   { href: "/pasta-de-midias", label: "Pasta de Mídias", icon: Images },
 ]
 
+const CLIENTS = [
+  { id: "client-001", name: "SLR Engenharia" },
+  { id: "client-002", name: "SLR Properties" },
+]
+
 interface SidebarProps {
   userName?: string
-  clientName?: string
 }
 
-export default function Sidebar({ userName = "Victor G.", clientName = "Cutelaria Ferreira" }: SidebarProps) {
+export default function Sidebar({ userName = "Victor G." }: SidebarProps) {
+  const [activeClient, setActiveClient] = useState(CLIENTS[0])
+  const [showClientMenu, setShowClientMenu] = useState(false)
   const pathname = usePathname()
 
   return (
@@ -49,17 +56,38 @@ export default function Sidebar({ userName = "Victor G.", clientName = "Cutelari
       </div>
 
       {/* Client selector */}
-      <div className="px-3 py-3 border-b border-border">
-        <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-ink-3 transition-colors group">
-          <Avatar name={clientName} size="sm" />
+      <div className="px-3 py-3 border-b border-border relative">
+        <button
+          onClick={() => setShowClientMenu(!showClientMenu)}
+          className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-ink-3 transition-colors group"
+        >
+          <Avatar name={activeClient.name} size="sm" />
           <div className="flex-1 text-left">
-            <div className="text-xs font-medium text-cream truncate">{clientName}</div>
+            <div className="text-xs font-medium text-cream truncate">{activeClient.name}</div>
             <div className="text-[10px] text-stone">Cliente ativo</div>
           </div>
-          <svg className="w-3.5 h-3.5 text-stone group-hover:text-cream transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+          <svg className={cn("w-3.5 h-3.5 text-stone transition-transform", showClientMenu && "rotate-180")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+        {showClientMenu && (
+          <div className="absolute left-3 right-3 top-full mt-1 bg-ink-3 border border-border rounded-xl shadow-modal z-50 overflow-hidden">
+            {CLIENTS.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => { setActiveClient(c); setShowClientMenu(false) }}
+                className={cn(
+                  "w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-ink-4 transition-colors text-left",
+                  activeClient.id === c.id && "bg-ink-4"
+                )}
+              >
+                <Avatar name={c.name} size="sm" />
+                <span className="text-xs font-medium text-cream">{c.name}</span>
+                {activeClient.id === c.id && <span className="ml-auto text-signal text-xs">✓</span>}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Nav */}
