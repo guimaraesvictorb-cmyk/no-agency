@@ -1,9 +1,99 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react"
 import { mockPosts, mockClients } from "@/lib/mock-data"
 import type { Post } from "@/lib/types"
+
+function NewPostModal({ onClose, onAdd }: { onClose: () => void; onAdd: (post: Post) => void }) {
+  const [clientId, setClientId] = useState(mockClients[0].id)
+  const [caption, setCaption] = useState("")
+  const [platform, setPlatform] = useState("instagram_facebook")
+  const [date, setDate] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!caption.trim() || !date) return
+    setSaving(true)
+    await new Promise((r) => setTimeout(r, 700))
+    const newPost: Post = {
+      id: `post-new-${Date.now()}`,
+      client_id: clientId,
+      batch_id: null,
+      caption,
+      platform: platform as any,
+      status: "draft",
+      image_url: null,
+      scheduled_for: new Date(date).toISOString(),
+      published_at: null,
+      rejection_reason: null,
+      image_prompt: null,
+      ai_generation_metadata: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    onAdd(newPost)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(10,10,10,0.8)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}>
+      <div className="rounded-2xl p-6 w-full max-w-md"
+        style={{ background: "var(--ink-2)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
+        onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <div className="text-[15px] font-semibold text-white">Novo Post</div>
+          <button onClick={onClose} className="text-stone hover:text-white"><X size={16} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-stone mb-2">Cliente</label>
+            <select value={clientId} onChange={(e) => setClientId(e.target.value)}
+              className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}>
+              {mockClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-stone mb-2">Plataforma</label>
+            <select value={platform} onChange={(e) => setPlatform(e.target.value)}
+              className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram_facebook">Instagram + Facebook</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-stone mb-2">Data de Agendamento</label>
+            <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required
+              className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)", colorScheme: "dark" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[1.5px] text-stone mb-2">Legenda</label>
+            <textarea value={caption} onChange={(e) => setCaption(e.target.value)} required rows={4}
+              placeholder="Escreva a legenda do post..."
+              className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none resize-none"
+              style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }} />
+          </div>
+          <button type="submit" disabled={saving || !caption.trim() || !date}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest text-white transition-all disabled:opacity-50"
+            style={{ background: "var(--signal)" }}>
+            {saving ? (
+              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Salvando...</>
+            ) : (
+              <><Plus size={13} /> Criar Post</>
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate()
@@ -45,12 +135,14 @@ export default function CalendarioPage() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [showNewPost, setShowNewPost] = useState(false)
+  const [posts, setPosts] = useState(mockPosts)
 
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDayOfMonth(year, month)
 
   const postsByDay: Record<number, Post[]> = {}
-  mockPosts.forEach((post) => {
+  posts.forEach((post) => {
     if (!post.scheduled_for) return
     const d = new Date(post.scheduled_for)
     if (d.getFullYear() === year && d.getMonth() === month) {
@@ -94,7 +186,8 @@ export default function CalendarioPage() {
             </button>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white"
+        <button onClick={() => setShowNewPost(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
           style={{ background: "var(--signal)" }}>
           <Plus size={13} />
           Novo Post
@@ -157,8 +250,8 @@ export default function CalendarioPage() {
                       </button>
                     )
                   })}
-                  {posts.length > 2 && (
-                    <div className="text-[10px] text-stone px-1">+{posts.length - 2} mais</div>
+                  {(postsByDay[day] ?? []).length > 2 && (
+                    <div className="text-[10px] text-stone px-1">+{(postsByDay[day] ?? []).length - 2} mais</div>
                   )}
                 </div>
               </div>
@@ -199,6 +292,13 @@ export default function CalendarioPage() {
             )}
           </div>
         </div>
+      )}
+
+      {showNewPost && (
+        <NewPostModal
+          onClose={() => setShowNewPost(false)}
+          onAdd={(post) => setPosts((prev) => [...prev, post])}
+        />
       )}
     </div>
   )

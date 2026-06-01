@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Upload, Search, Images, Trash2, Copy, Image } from "lucide-react"
+import { useState, useRef } from "react"
+import { Upload, Search, Images, Trash2, Copy, Image, CheckCircle } from "lucide-react"
 import { mockMediaFiles } from "@/lib/mock-data"
 import { formatFileSize, formatDate } from "@/lib/utils"
 import type { MediaFile } from "@/lib/types"
@@ -10,6 +10,39 @@ export default function PastaDeMidiasPage() {
   const [files, setFiles] = useState(mockMediaFiles)
   const [search, setSearch] = useState("")
   const [selected, setSelected] = useState<MediaFile | null>(null)
+  const [copied, setCopied] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleUploadClick() {
+    fileInputRef.current?.click()
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const fileList = e.target.files
+    if (!fileList) return
+    Array.from(fileList).forEach((file) => {
+      const url = URL.createObjectURL(file)
+      const newFile: MediaFile = {
+        id: `media-${Date.now()}-${Math.random()}`,
+        client_id: "client-001",
+        file_name: file.name,
+        file_url: url,
+        file_type: file.type,
+        file_size: file.size,
+        tags: [],
+        uploaded_at: new Date().toISOString(),
+      }
+      setFiles((prev) => [newFile, ...prev])
+    })
+    e.target.value = ""
+  }
+
+  async function handleCopyUrl() {
+    if (!selected) return
+    await navigator.clipboard.writeText(selected.file_url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const filtered = files.filter(
     (f) =>
@@ -25,11 +58,13 @@ export default function PastaDeMidiasPage() {
           <h1 className="font-bebas text-[40px] text-white leading-none mb-1">Pasta de Mídias</h1>
           <p className="text-[13px] text-stone">{files.length} arquivo{files.length !== 1 ? "s" : ""} enviados</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white"
+        <button onClick={handleUploadClick}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
           style={{ background: "var(--signal)" }}>
           <Upload size={13} />
           Upload
         </button>
+        <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple onChange={handleFileChange} className="hidden" />
       </div>
 
       {/* Search */}
@@ -118,10 +153,11 @@ export default function PastaDeMidiasPage() {
               )}
             </div>
             <div className="flex gap-2 mt-5">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[12px] font-semibold text-white transition-colors"
-                style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
-                <Copy size={12} />
-                Copiar URL
+              <button onClick={handleCopyUrl}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[12px] font-semibold transition-colors"
+                style={{ background: "var(--ink-3)", border: "1px solid var(--border)", color: copied ? "#10B981" : "white" }}>
+                {copied ? <CheckCircle size={12} /> : <Copy size={12} />}
+                {copied ? "Copiado!" : "Copiar URL"}
               </button>
               <button
                 onClick={() => { setFiles((prev) => prev.filter((f) => f.id !== selected.id)); setSelected(null) }}

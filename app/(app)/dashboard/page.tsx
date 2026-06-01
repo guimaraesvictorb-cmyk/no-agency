@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { mockDashboardStats, mockPosts, mockClients, mockNpsResponses } from "@/lib/mock-data"
 import { formatRelativeTime } from "@/lib/utils"
 
@@ -129,10 +130,10 @@ export default function DashboardPage() {
                 </span>
               </div>
             ))}
-            <button className="w-full py-3 text-[12px] font-bold uppercase tracking-widest text-white rounded-lg transition-colors mt-1"
+            <Link href="/calendario" className="block w-full py-3 text-center text-[12px] font-bold uppercase tracking-widest text-white rounded-lg transition-opacity hover:opacity-90 mt-1"
               style={{ background: "var(--signal)" }}>
               Ver e aprovar posts →
-            </button>
+            </Link>
           </div>
         </div>
 

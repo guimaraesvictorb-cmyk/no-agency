@@ -1,9 +1,81 @@
 "use client"
 
 import { useState } from "react"
-import { Sparkles, Building2, Users, MessageCircle, Settings, Save, RefreshCw } from "lucide-react"
+import { Sparkles, Building2, Users, MessageCircle, Settings, Save, RefreshCw, CheckCircle, X } from "lucide-react"
 import { mockDnaBrief } from "@/lib/mock-data"
 import { DAYS_PT } from "@/lib/utils"
+
+const GENERATED_PREVIEW = [
+  "Construção de excelência: por que a SLR Engenharia é referência em SP 🏗️",
+  "Bastidores de obra: veja como cada detalhe é pensado para durar décadas 🔧",
+  "Da planta à realidade — o processo que garante a entrega no prazo ✅",
+  "Engenharia de alto padrão não é custo, é investimento no futuro da sua empresa 💼",
+  "5 perguntas que todo cliente deve fazer antes de contratar uma construtora 🏢",
+]
+
+function GenerateModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"loading" | "done">("loading")
+
+  useState(() => {
+    const t = setTimeout(() => setStep("done"), 2200)
+    return () => clearTimeout(t)
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(10,10,10,0.8)", backdropFilter: "blur(8px)" }}
+      onClick={step === "done" ? onClose : undefined}>
+      <div className="rounded-2xl p-6 w-full max-w-md"
+        style={{ background: "var(--ink-2)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
+        onClick={(e) => e.stopPropagation()}>
+        {step === "loading" ? (
+          <div className="flex flex-col items-center py-8 gap-4">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-2 border-signal/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-t-signal animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles size={20} style={{ color: "var(--signal)" }} />
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-[15px] font-semibold text-white mb-1">Gerando conteúdo...</div>
+              <div className="text-[12px] text-stone">A IA está criando os posts com base no DNA da marca</div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} style={{ color: "#10B981" }} />
+                <span className="text-[13px] font-semibold text-white">
+                  {GENERATED_PREVIEW.length} posts gerados!
+                </span>
+              </div>
+              <button onClick={onClose} className="text-stone hover:text-white"><X size={16} /></button>
+            </div>
+            <div className="space-y-2 mb-5">
+              {GENERATED_PREVIEW.map((caption, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
+                  <span className="text-[11px] font-bold text-stone w-5 flex-shrink-0 mt-0.5">#{i + 1}</span>
+                  <span className="text-[12px] text-white leading-snug">{caption}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[12px] text-stone mb-4">
+              Os posts foram adicionados ao Calendário Editorial para revisão.
+            </p>
+            <button onClick={onClose}
+              className="w-full py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest text-white"
+              style={{ background: "var(--signal)" }}>
+              Ver no Calendário →
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 const BLOCKS = [
   { id: "empresa", label: "Empresa", icon: Building2, accent: "var(--signal)" },
@@ -53,6 +125,7 @@ export default function HistoriaPage() {
   const [activeBlock, setActiveBlock] = useState("empresa")
   const [saving, setSaving] = useState(false)
   const [newTheme, setNewTheme] = useState("")
+  const [showGenerate, setShowGenerate] = useState(false)
 
   async function handleSave() {
     setSaving(true)
@@ -341,12 +414,15 @@ export default function HistoriaPage() {
           <div className="text-[13px] font-semibold text-white">Gerar Conteúdo com IA</div>
           <div className="text-[11px] text-stone">Baseado no DNA atual, a IA vai criar os posts da próxima semana.</div>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white"
+        <button onClick={() => setShowGenerate(true)}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
           style={{ background: "var(--signal)" }}>
           <Sparkles size={13} />
           Gerar Agora
         </button>
       </div>
+
+      {showGenerate && <GenerateModal onClose={() => setShowGenerate(false)} />}
     </div>
   )
 }

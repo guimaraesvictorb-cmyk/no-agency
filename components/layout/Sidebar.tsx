@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn, getInitials } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
 import LogoCluster from "@/components/ui/LogoCluster"
 import {
   LayoutDashboard,
@@ -48,8 +49,15 @@ const CLIENTS = [
 
 export default function Sidebar({ userName = "Victor G." }: { userName?: string }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [activeClient, setActiveClient] = useState(CLIENTS[0])
   const [showClientMenu, setShowClientMenu] = useState(false)
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col z-30"
@@ -163,7 +171,7 @@ export default function Sidebar({ userName = "Victor G." }: { userName?: string 
 
       {/* Footer */}
       <div className="px-5 py-4" style={{ borderTop: "1px solid var(--border)" }}>
-        <button className="flex items-center gap-2 text-[12px] text-stone hover:text-white transition-colors">
+        <button onClick={handleLogout} className="flex items-center gap-2 text-[12px] text-stone hover:text-white transition-colors">
           <LogOut size={14} />
           Sair da conta
         </button>
