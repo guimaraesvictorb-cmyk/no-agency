@@ -14,11 +14,12 @@
   --cream-2: #E8E1D9;
   --stone: #8A8582;
   --signal: #D64045;
-  --green: #2ECC71;
-  --amber: #F39C12;
-  --blue: #3498DB;
-  --border: #2A2A2A;
+  --green: #10B981;
+  --amber: #F59E0B;
+  --blue: #6366F1;
+  --border: rgba(255,255,255,0.07);
   --border-light: #E8E1D9;
+  --ink-border: #242424;
 
   --background: var(--ink);
   --foreground: var(--cream);
