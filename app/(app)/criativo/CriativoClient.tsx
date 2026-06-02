@@ -52,7 +52,10 @@ type InterviewAnswers = {
   foco: string
   autoridade: string
   tom: string
+  gerar_imagens?: string
 }
+
+type MediaFile = { id: string; file_url: string; tags: string[] }
 
 // ─── Interview questions ──────────────────────────────────────────────────────
 
@@ -510,19 +513,31 @@ function GeneratingScreen({ clientName }: { clientName: string }) {
 
 // ─── Interview chat ───────────────────────────────────────────────────────────
 
+const QUESTION_IMAGENS = {
+  id: "gerar_imagens",
+  text: "Sem imagens na biblioteca. Posso gerar tudo com IA?",
+  options: [
+    { value: "sim", label: "✅ Sim, gera tudo com IA" },
+    { value: "nao", label: "📸 Vou adicionar imagens depois" },
+  ],
+}
+
 function InterviewChat({
   clientName,
+  hasImages,
   onComplete,
 }: {
   clientName: string
+  hasImages: boolean
   onComplete: (answers: InterviewAnswers) => void
 }) {
+  const allQuestions = hasImages ? QUESTIONS : [...QUESTIONS, QUESTION_IMAGENS]
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Partial<InterviewAnswers>>({})
   const [listening, setListening] = useState(false)
   const [messages, setMessages] = useState<{ from: "nova" | "user"; text: string }[]>([
     { from: "nova", text: `Sou a NOVA, sua Diretora Criativa. Vou montar o planejamento de **${clientName}**.` },
-    { from: "nova", text: QUESTIONS[0].text },
+    { from: "nova", text: allQuestions[0].text },
   ])
   const bottomRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
@@ -553,7 +568,7 @@ function InterviewChat({
       const transcript = Array.from(e.results)[0][0].transcript.trim()
       if (!transcript) { setListening(false); return }
       // Try to match transcript to current question options
-      const currentQ = QUESTIONS[step]
+      const currentQ = allQuestions[step]
       const match = currentQ.options.find((o) =>
         o.label.toLowerCase().includes(transcript.toLowerCase()) ||
         transcript.toLowerCase().includes(o.value.toLowerCase())
@@ -582,9 +597,9 @@ function InterviewChat({
 
   function advance(currentAnswers: Partial<InterviewAnswers>, currentStep: number) {
     const nextStep = currentStep + 1
-    if (nextStep < QUESTIONS.length) {
+    if (nextStep < allQuestions.length) {
       setTimeout(() => {
-        setMessages((prev) => [...prev, { from: "nova", text: QUESTIONS[nextStep].text }])
+        setMessages((prev) => [...prev, { from: "nova", text: allQuestions[nextStep].text }])
         setStep(nextStep)
       }, 350)
     } else {
@@ -598,7 +613,7 @@ function InterviewChat({
     }
   }
 
-  const isComplete = step >= QUESTIONS.length
+  const isComplete = step >= allQuestions.length
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100vh - 160px)" }}>
@@ -628,7 +643,7 @@ function InterviewChat({
       {!isComplete && (
         <div className="pt-4" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="grid grid-cols-1 gap-2">
-            {QUESTIONS[step].options.map((opt) => (
+            {allQuestions[step].options.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => handleChoiceSelect(opt.value, opt.label)}
@@ -642,11 +657,11 @@ function InterviewChat({
 
           {/* Progress + mic */}
           <div className="flex items-center gap-2 mt-3">
-            {QUESTIONS.map((_, i) => (
+            {allQuestions.map((_, i) => (
               <div key={i} className="h-1 flex-1 rounded-full transition-all"
                 style={{ background: i < step ? "var(--signal)" : i === step ? "rgba(214,64,69,0.4)" : "var(--ink-3)" }} />
             ))}
-            <span className="text-[10px] text-stone">{step + 1}/{QUESTIONS.length}</span>
+            <span className="text-[10px] text-stone">{step + 1}/{allQuestions.length}</span>
             <button
               onClick={listening ? stopListening : startListening}
               className="ml-1 p-1.5 rounded-lg transition-all"
@@ -678,21 +693,28 @@ export default function CriativoClient({ profile, clients }: { profile: Profile;
   const [posts, setPosts] = useState<GeneratedPost[]>([])
   const [error, setError] = useState<string | null>(null)
   const [brief, setBrief] = useState<Record<string, unknown> | null>(null)
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
 
   const activeClient = selectedClient ?? clients[0] ?? null
 
-  // Load brief
+  // Load brief + media files
   useEffect(() => {
     if (!activeClient?.id) return
-    fetch(`/api/dna-brief?client_id=${activeClient.id}`)
-      .then((r) => r.json())
-      .then((d) => { if (d.brief) setBrief(d.brief) })
-      .catch(() => {})
+    Promise.all([
+      fetch(`/api/dna-brief?client_id=${activeClient.id}`).then((r) => r.json()),
+      fetch(`/api/upload/asset?client_id=${activeClient.id}`).then((r) => r.json()),
+    ]).then(([briefData, mediaData]) => {
+      if (briefData.brief) setBrief(briefData.brief)
+      if (mediaData.files) setMediaFiles(mediaData.files)
+    }).catch(() => {})
   }, [activeClient?.id])
 
   const handleInterviewComplete = useCallback(async (answers: InterviewAnswers) => {
     setStage("generating")
     setError(null)
+
+    const logoUrl = mediaFiles.find((f) => f.tags.includes("logo"))?.file_url ?? null
+    const imageUrls = mediaFiles.filter((f) => f.tags.includes("biblioteca")).map((f) => f.file_url)
 
     try {
       const res = await fetch("/api/criativo/generate", {
@@ -703,6 +725,8 @@ export default function CriativoClient({ profile, clients }: { profile: Profile;
           answers,
           client_id: activeClient?.id,
           plano: activeClient?.plan ?? "pro",
+          logo_url: logoUrl,
+          image_urls: imageUrls,
         }),
       })
       const json = await res.json()
@@ -820,7 +844,11 @@ export default function CriativoClient({ profile, clients }: { profile: Profile;
 
       {/* Stage content */}
       {stage === "interview" && (
-        <InterviewChat clientName={activeClient.name} onComplete={handleInterviewComplete} />
+        <InterviewChat
+          clientName={activeClient.name}
+          hasImages={mediaFiles.some((f) => f.tags.includes("biblioteca"))}
+          onComplete={handleInterviewComplete}
+        />
       )}
 
       {stage === "generating" && (

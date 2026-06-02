@@ -17,6 +17,7 @@ export default async function RelatorioPage() {
     .from("clients")
     .select("id, name")
     .or(`profile_id.eq.${profile.id},user_id.eq.${profile.id}`)
+    .limit(1)
     .maybeSingle()
 
   if (!client) redirect("/dashboard")

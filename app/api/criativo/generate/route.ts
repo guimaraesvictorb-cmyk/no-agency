@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
 
-  const { brief, answers, client_id, plano } = await req.json()
+  const { brief, answers, client_id, plano, logo_url, image_urls } = await req.json()
 
   const systemPrompt = `Você é a NOVA — Diretora Criativa de IA da No Agency.
 Você transforma o DNA de uma marca em criativos de alta performance para redes sociais.
@@ -40,6 +40,12 @@ Plataforma: ${brief?.platform ?? "instagram_facebook"}
 Temas: ${(brief?.content_themes ?? []).join(", ")}
 Notas IA: ${brief?.ai_notes ?? ""}
 
+=== ASSETS VISUAIS DA MARCA ===
+Logo: ${logo_url ?? "Não disponível — descreva o logo no briefing de design quando relevante"}
+Imagens reais: ${(image_urls as string[] ?? []).length > 0
+  ? (image_urls as string[]).map((u: string, i: number) => `Imagem ${i + 1}: ${u}`).join("\n")
+  : "Nenhuma — crie prompts detalhados para geração de imagem com IA"}
+
 === ENTREVISTA ===
 Objetivo: ${answers.objetivo ?? "autoridade"}
 Volume: ${numPosts} posts
@@ -49,6 +55,8 @@ Tom da campanha: ${answers.tom ?? "humano"}
 Plano: ${plano?.toUpperCase() ?? "PRO"} (${variacoes} variação${variacoes > 1 ? "ões" : ""} por post)
 
 === REGRAS ===
+- Se houver imagens reais disponíveis nos ASSETS VISUAIS, referencie-as no campo "imagem" do design: "Usar [URL da imagem]"
+- Se houver logo disponível, mencione-o no texto_criativo quando fizer sentido para a arte
 - Varie os tipos: educativo, bastidores, prova_social, pergunta, autoridade, oferta, manifesto
 - Cada post tem função no funil: topo (awareness), meio (consideração), fundo (decisão)
 - Máximo 3 hashtags no corpo — o resto vai no comentário

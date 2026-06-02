@@ -5,12 +5,23 @@ import { useRouter } from "next/navigation"
 import {
   Sparkles, Building2, Users, MessageCircle, Settings,
   Save, RefreshCw, CheckCircle, X, AlertCircle, ExternalLink,
+  ImageIcon, Upload, Trash2,
 } from "lucide-react"
 import { useSelectedClient } from "@/lib/context/ClientContext"
 import { DAYS_PT } from "@/lib/utils"
 import type { DnaBrief, SocialPlatform } from "@/lib/types"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type MediaFile = {
+  id: string
+  file_name: string
+  file_url: string
+  file_type: string
+  file_size: number
+  tags: string[]
+  uploaded_at: string
+}
 
 type GeneratedPost = {
   id: string
@@ -212,6 +223,7 @@ const BLOCKS = [
   { id: "cliente",     label: "Cliente Ideal", icon: Users,         accent: "var(--blue)"   },
   { id: "tom",         label: "Tom de Voz",    icon: MessageCircle, accent: "var(--green)"  },
   { id: "operacional", label: "Operacional",   icon: Settings,      accent: "var(--amber)"  },
+  { id: "arquivos",    label: "Arquivos",      icon: ImageIcon,     accent: "#A855F7"        },
 ]
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -225,11 +237,51 @@ export default function HistoriaPage() {
   const [newTheme, setNewTheme] = useState("")
   const [loadingBrief, setLoadingBrief] = useState(false)
 
+  // Media files state
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingImg, setUploadingImg] = useState(false)
+
   // Generate state
   const [genLoading, setGenLoading] = useState(false)
   const [genPosts, setGenPosts] = useState<GeneratedPost[]>([])
   const [genError, setGenError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+
+  const loadMediaFiles = useCallback(async (clientId: string) => {
+    try {
+      const res = await fetch(`/api/upload/asset?client_id=${clientId}`)
+      const data = await res.json()
+      if (data.files) setMediaFiles(data.files)
+    } catch {}
+  }, [])
+
+  async function handleUpload(file: File, tag: "logo" | "biblioteca") {
+    if (!selectedClient) return
+    const setUploading = tag === "logo" ? setUploadingLogo : setUploadingImg
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      form.append("client_id", selectedClient.id)
+      form.append("tag", tag)
+      const res = await fetch("/api/upload/asset", { method: "POST", body: form })
+      const data = await res.json()
+      if (data.file) setMediaFiles((prev) => [data.file, ...prev])
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleDeleteFile(id: string) {
+    if (!selectedClient) return
+    await fetch("/api/upload/asset", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ media_file_id: id, client_id: selectedClient.id }),
+    })
+    setMediaFiles((prev) => prev.filter((f) => f.id !== id))
+  }
 
   // Load brief when client changes
   const loadBrief = useCallback(async (clientId: string) => {
@@ -246,8 +298,11 @@ export default function HistoriaPage() {
   }, [])
 
   useEffect(() => {
-    if (selectedClient?.id) loadBrief(selectedClient.id)
-  }, [selectedClient?.id, loadBrief])
+    if (selectedClient?.id) {
+      loadBrief(selectedClient.id)
+      loadMediaFiles(selectedClient.id)
+    }
+  }, [selectedClient?.id, loadBrief, loadMediaFiles])
 
   async function handleSave() {
     if (!brief || !selectedClient) return
@@ -403,6 +458,7 @@ export default function HistoriaPage() {
             {activeBlock === "cliente"     && "Bloco 2 — Cliente Ideal"}
             {activeBlock === "tom"         && "Bloco 3 — Tom de Voz"}
             {activeBlock === "operacional" && "Bloco 4 — Operacional"}
+            {activeBlock === "arquivos"    && "Bloco 5 — Arquivos da Marca"}
           </span>
         </div>
 
@@ -513,6 +569,130 @@ export default function HistoriaPage() {
             </div>
           </div>
         )}
+
+        {activeBlock === "arquivos" && (() => {
+          const logoFile = mediaFiles.find((f) => f.tags.includes("logo"))
+          const biblioteca = mediaFiles.filter((f) => f.tags.includes("biblioteca"))
+          return (
+            <div className="space-y-6">
+              {/* Logo */}
+              <div>
+                <FieldLabel>Logo da Marca</FieldLabel>
+                <p className="text-[11px] text-stone mb-3">PNG, SVG ou JPG — usado nos criativos e briefings de design.</p>
+                {logoFile ? (
+                  <div className="flex items-center gap-4 p-3 rounded-xl"
+                    style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
+                    <img
+                      src={logoFile.file_url}
+                      alt="Logo"
+                      className="w-16 h-16 object-contain rounded-lg flex-shrink-0"
+                      style={{ background: "rgba(255,255,255,0.05)" }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-semibold text-white truncate">{logoFile.file_name}</div>
+                      <div className="text-[11px] text-stone mt-0.5">
+                        {(logoFile.file_size / 1024).toFixed(0)} KB
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteFile(logoFile.id)}
+                      className="p-2 rounded-lg text-stone hover:text-signal transition-colors flex-shrink-0"
+                      style={{ background: "var(--ink-4)", border: "1px solid var(--border)" }}
+                      title="Remover logo"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer">
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-xl transition-colors"
+                      style={{ background: "var(--ink-3)", border: "2px dashed var(--border)" }}>
+                      {uploadingLogo ? (
+                        <RefreshCw size={20} className="text-stone animate-spin" />
+                      ) : (
+                        <>
+                          <Upload size={20} className="text-stone" />
+                          <span className="text-[12px] text-stone">Clique para enviar o logo</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                      className="hidden"
+                      disabled={uploadingLogo}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleUpload(file, "logo")
+                        e.target.value = ""
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Biblioteca */}
+              <div>
+                <FieldLabel>Biblioteca de Imagens</FieldLabel>
+                <p className="text-[11px] text-stone mb-3">
+                  Fotos do produto, equipe, espaço — a IA prioriza essas imagens ao gerar criativos.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {biblioteca.map((img) => (
+                    <div key={img.id} className="relative group rounded-xl overflow-hidden aspect-square"
+                      style={{ background: "var(--ink-3)" }}>
+                      <img
+                        src={img.file_url}
+                        alt={img.file_name}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => handleDeleteFile(img.id)}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ background: "rgba(214,64,69,0.85)" }}
+                      >
+                        <X size={11} className="text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Add more button */}
+                  <label className="cursor-pointer">
+                    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl aspect-square transition-colors"
+                      style={{ background: "var(--ink-3)", border: "2px dashed var(--border)" }}>
+                      {uploadingImg ? (
+                        <RefreshCw size={16} className="text-stone animate-spin" />
+                      ) : (
+                        <>
+                          <Upload size={16} className="text-stone" />
+                          <span className="text-[10px] text-stone">Adicionar</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      disabled={uploadingImg}
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files ?? [])
+                        for (const file of files) {
+                          await handleUpload(file, "biblioteca")
+                        }
+                        e.target.value = ""
+                      }}
+                    />
+                  </label>
+                </div>
+                {biblioteca.length === 0 && !uploadingImg && (
+                  <p className="text-[11px] text-stone/50 mt-2 text-center">
+                    Sem imagens — a IA vai gerar tudo com prompts detalhados.
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {activeBlock === "operacional" && (
           <div className="space-y-5">
