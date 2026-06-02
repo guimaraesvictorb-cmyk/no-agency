@@ -571,63 +571,73 @@ export default function HistoriaPage() {
         )}
 
         {activeBlock === "arquivos" && (() => {
-          const logoFile = mediaFiles.find((f) => f.tags.includes("logo"))
+          const logos = mediaFiles.filter((f) => f.tags.includes("logo"))
           const biblioteca = mediaFiles.filter((f) => f.tags.includes("biblioteca"))
           return (
             <div className="space-y-6">
-              {/* Logo */}
+              {/* Logos */}
               <div>
-                <FieldLabel>Logo da Marca</FieldLabel>
-                <p className="text-[11px] text-stone mb-3">PNG, SVG ou JPG — usado nos criativos e briefings de design.</p>
-                {logoFile ? (
-                  <div className="flex items-center gap-4 p-3 rounded-xl"
-                    style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
-                    <img
-                      src={logoFile.file_url}
-                      alt="Logo"
-                      className="w-16 h-16 object-contain rounded-lg flex-shrink-0"
-                      style={{ background: "rgba(255,255,255,0.05)" }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-white truncate">{logoFile.file_name}</div>
-                      <div className="text-[11px] text-stone mt-0.5">
-                        {(logoFile.file_size / 1024).toFixed(0)} KB
+                <FieldLabel>Logos da Marca</FieldLabel>
+                <p className="text-[11px] text-stone mb-3">
+                  Envie todas as variações — cor, versão horizontal, quadrado, fundo claro/escuro. PNG, SVG ou JPG.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {logos.map((logo) => (
+                    <div key={logo.id} className="relative group rounded-xl overflow-hidden flex flex-col"
+                      style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
+                      <div className="aspect-square flex items-center justify-center p-3"
+                        style={{ background: "rgba(255,255,255,0.04)" }}>
+                        <img
+                          src={logo.file_url}
+                          alt={logo.file_name}
+                          className="max-w-full max-h-full object-contain"
+                        />
                       </div>
+                      <div className="px-2 py-1.5">
+                        <div className="text-[10px] text-stone truncate">{logo.file_name}</div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteFile(logo.id)}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ background: "rgba(214,64,69,0.85)" }}
+                      >
+                        <X size={11} className="text-white" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleDeleteFile(logoFile.id)}
-                      className="p-2 rounded-lg text-stone hover:text-signal transition-colors flex-shrink-0"
-                      style={{ background: "var(--ink-4)", border: "1px solid var(--border)" }}
-                      title="Remover logo"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="block cursor-pointer">
-                    <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-xl transition-colors"
+                  ))}
+                  {/* Add logo button */}
+                  <label className="cursor-pointer">
+                    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl aspect-square transition-colors"
                       style={{ background: "var(--ink-3)", border: "2px dashed var(--border)" }}>
                       {uploadingLogo ? (
-                        <RefreshCw size={20} className="text-stone animate-spin" />
+                        <RefreshCw size={16} className="text-stone animate-spin" />
                       ) : (
                         <>
-                          <Upload size={20} className="text-stone" />
-                          <span className="text-[12px] text-stone">Clique para enviar o logo</span>
+                          <Upload size={16} className="text-stone" />
+                          <span className="text-[10px] text-stone">Adicionar logo</span>
                         </>
                       )}
                     </div>
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                      multiple
                       className="hidden"
                       disabled={uploadingLogo}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleUpload(file, "logo")
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files ?? [])
+                        for (const file of files) {
+                          await handleUpload(file, "logo")
+                        }
                         e.target.value = ""
                       }}
                     />
                   </label>
+                </div>
+                {logos.length === 0 && !uploadingLogo && (
+                  <p className="text-[11px] text-stone/50 mt-2 text-center">
+                    Sem logos — a IA vai descrever o visual no briefing de design.
+                  </p>
                 )}
               </div>
 

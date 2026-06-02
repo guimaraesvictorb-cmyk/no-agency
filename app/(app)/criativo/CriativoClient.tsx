@@ -713,7 +713,7 @@ export default function CriativoClient({ profile, clients }: { profile: Profile;
     setStage("generating")
     setError(null)
 
-    const logoUrl = mediaFiles.find((f) => f.tags.includes("logo"))?.file_url ?? null
+    const logoUrls = mediaFiles.filter((f) => f.tags.includes("logo")).map((f) => f.file_url)
     const imageUrls = mediaFiles.filter((f) => f.tags.includes("biblioteca")).map((f) => f.file_url)
 
     try {
@@ -725,7 +725,7 @@ export default function CriativoClient({ profile, clients }: { profile: Profile;
           answers,
           client_id: activeClient?.id,
           plano: activeClient?.plan ?? "pro",
-          logo_url: logoUrl,
+          logo_urls: logoUrls,
           image_urls: imageUrls,
         }),
       })

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
 
-  const { brief, answers, client_id, plano, logo_url, image_urls } = await req.json()
+  const { brief, answers, client_id, plano, logo_urls, image_urls } = await req.json()
 
   const systemPrompt = `Você é a NOVA — Diretora Criativa de IA da No Agency.
 Você transforma o DNA de uma marca em criativos de alta performance para redes sociais.
@@ -41,7 +41,9 @@ Temas: ${(brief?.content_themes ?? []).join(", ")}
 Notas IA: ${brief?.ai_notes ?? ""}
 
 === ASSETS VISUAIS DA MARCA ===
-Logo: ${logo_url ?? "Não disponível — descreva o logo no briefing de design quando relevante"}
+Logos (${(logo_urls as string[] ?? []).length} variações): ${(logo_urls as string[] ?? []).length > 0
+  ? (logo_urls as string[]).map((u: string, i: number) => `Logo ${i + 1}: ${u}`).join("\n")
+  : "Não disponível — descreva o visual do logo no briefing de design"}
 Imagens reais: ${(image_urls as string[] ?? []).length > 0
   ? (image_urls as string[]).map((u: string, i: number) => `Imagem ${i + 1}: ${u}`).join("\n")
   : "Nenhuma — crie prompts detalhados para geração de imagem com IA"}
