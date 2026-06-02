@@ -55,11 +55,39 @@ function StatCard({ label, value, sub, accent }: {
 
 // ─── Admin dashboard ─────────────────────────────────────────────────────────
 
+const PLAN_STYLES: Record<string, { bg: string; color: string }> = {
+  starter: { bg: "rgba(138,133,130,0.15)", color: "#8A8582" },
+  growth:  { bg: "rgba(99,102,241,0.15)",  color: "#6366F1" },
+  pro:     { bg: "rgba(214,64,69,0.15)",   color: "var(--signal)" },
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  const s = PLAN_STYLES[plan?.toLowerCase()] ?? PLAN_STYLES.starter
+  return (
+    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full capitalize"
+      style={{ background: s.bg, color: s.color }}>
+      {plan ?? "—"}
+    </span>
+  )
+}
+
+function StatusDot({ status }: { status: string }) {
+  const active = status === "active"
+  return (
+    <span className="flex items-center gap-1.5 text-[12px]"
+      style={{ color: active ? "#10B981" : "#8A8582" }}>
+      <span className="w-1.5 h-1.5 rounded-full inline-block"
+        style={{ background: active ? "#10B981" : "#8A8582" }} />
+      {active ? "Ativo" : "Inativo"}
+    </span>
+  )
+}
+
 async function AdminDashboard({ userId }: { userId: string }) {
   const supabase = await createClient()
 
   const [{ data: clients }, { data: posts }, { data: npsRows }] = await Promise.all([
-    supabase.from("clients").select("id, name, status, plan").eq("profile_id", userId),
+    supabase.from("clients").select("id, name, status, plan").order("name", { ascending: true }),
     supabase.from("posts").select("id, status, caption, platform, client_id, scheduled_for, created_at").order("created_at", { ascending: false }),
     supabase.from("nps_responses").select("id, score, comment, client_id, created_at").order("created_at", { ascending: false }).limit(5),
   ])
@@ -67,12 +95,6 @@ async function AdminDashboard({ userId }: { userId: string }) {
   const activeClients = (clients ?? []).filter((c) => c.status === "active").length
   const pendingPosts  = (posts ?? []).filter((p) => p.status === "sent_for_approval")
   const scheduledPosts = (posts ?? []).filter((p) => p.status === "approved" || p.status === "scheduled")
-  const publishedMonth = (posts ?? []).filter((p) => {
-    if (p.status !== "published") return false
-    const d = new Date(p.created_at)
-    const now = new Date()
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).length
 
   const npsScores = (npsRows ?? []).map((n) => n.score)
   const avgNps = npsScores.length
@@ -80,6 +102,10 @@ async function AdminDashboard({ userId }: { userId: string }) {
     : 0
 
   const clientMap = Object.fromEntries((clients ?? []).map((c) => [c.id, c.name]))
+  const pendingByClient = (clients ?? []).map((c) => ({
+    ...c,
+    pendingCount: pendingPosts.filter((p) => p.client_id === c.id).length,
+  }))
 
   return (
     <div className="space-y-6">
@@ -90,12 +116,47 @@ async function AdminDashboard({ userId }: { userId: string }) {
 
       <PipelineBar />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Posts este mês"     value={`${publishedMonth}/20`}       sub="publicações"      accent="red"   />
-        <StatCard label="Clientes ativos"    value={String(activeClients)}         sub="100% ativos"      accent="green" />
-        <StatCard label="Aguard. aprovação"  value={String(pendingPosts.length)}   sub="prazo 5 dias"     accent="amber" />
-        <StatCard label="NPS médio"          value={avgNps ? `${avgNps}/10` : "—"} sub="este mês"         accent="blue"  />
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard label="Clientes ativos"   value={String(activeClients)}         sub="100% ativos"  accent="green" />
+        <StatCard label="Aguard. aprovação" value={String(pendingPosts.length)}   sub="prazo 5 dias" accent="amber" />
+        <StatCard label="NPS médio"         value={avgNps ? `${avgNps}/10` : "—"} sub="este mês"     accent="blue"  />
       </div>
+
+      {/* Clients table */}
+      {(clients ?? []).length > 0 && (
+        <div className="rounded-xl overflow-hidden"
+          style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}>
+          <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+            <div className="text-[13px] font-semibold text-white">Clientes</div>
+            <div className="text-[12px] text-stone mt-0.5">{activeClients} de {(clients ?? []).length} ativos</div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Cliente", "Plano", "Status", "Pendentes"].map((h) => (
+                    <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold text-stone uppercase tracking-wide">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pendingByClient.map((c, i) => (
+                  <tr key={c.id} style={i < pendingByClient.length - 1 ? { borderBottom: "1px solid var(--border)" } : {}}>
+                    <td className="px-5 py-3.5 text-[13px] font-semibold text-white">{c.name}</td>
+                    <td className="px-5 py-3.5"><PlanBadge plan={c.plan} /></td>
+                    <td className="px-5 py-3.5"><StatusDot status={c.status} /></td>
+                    <td className="px-5 py-3.5 text-[13px]">
+                      {c.pendingCount > 0
+                        ? <span className="font-bold" style={{ color: "var(--amber)" }}>{c.pendingCount}</span>
+                        : <span className="text-stone">—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Posts para aprovar */}

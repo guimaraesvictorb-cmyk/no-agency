@@ -35,11 +35,8 @@ const NAV_ADMIN = [
   {
     section: "Principal",
     items: [
-      { href: "/dashboard",      label: "Dashboard",            icon: LayoutDashboard, badge: null },
-      { href: "/historia",       label: "Sua História",         icon: Sparkles  },
-      { href: "/criativo",       label: "Gerar Criativos",      icon: Wand2     },
-      { href: "/calendario",     label: "Calendário Editorial", icon: CalendarDays },
-      { href: "/feedback",       label: "Feedback & NPS",       icon: Star },
+      { href: "/dashboard", label: "Dashboard",     icon: LayoutDashboard },
+      { href: "/feedback",  label: "Feedback & NPS", icon: Star },
     ],
   },
   {
@@ -49,17 +46,16 @@ const NAV_ADMIN = [
     ],
   },
   {
-    section: "Configurações",
+    section: "Integrações",
     items: [
-      { href: "/midias-sociais",   label: "Mídias Sociais",  icon: Share2 },
-      { href: "/pasta-de-midias",  label: "Pasta de Mídias", icon: Images },
+      { href: "/midias-sociais", label: "Mídias Sociais", icon: Share2 },
     ],
   },
   {
     section: "Gestão",
     items: [
-      { href: "/admin",          label: "Clientes",       icon: Users    },
-      { href: "/configuracoes",  label: "Configurações",  icon: Settings },
+      { href: "/admin",         label: "Clientes",      icon: Users    },
+      { href: "/configuracoes", label: "Configurações", icon: Settings },
     ],
   },
 ]
