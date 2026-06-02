@@ -1,74 +1,164 @@
 "use client"
 
-import { useState } from "react"
-import { Sparkles, Building2, Users, MessageCircle, Settings, Save, RefreshCw, CheckCircle, X } from "lucide-react"
-import { mockDnaBrief } from "@/lib/mock-data"
+import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import {
+  Sparkles, Building2, Users, MessageCircle, Settings,
+  Save, RefreshCw, CheckCircle, X, AlertCircle, ExternalLink,
+} from "lucide-react"
+import { useSelectedClient } from "@/lib/context/ClientContext"
 import { DAYS_PT } from "@/lib/utils"
+import type { DnaBrief, SocialPlatform } from "@/lib/types"
 
-const GENERATED_PREVIEW = [
-  "Construção de excelência: por que a SLR Engenharia é referência em SP 🏗️",
-  "Bastidores de obra: veja como cada detalhe é pensado para durar décadas 🔧",
-  "Da planta à realidade — o processo que garante a entrega no prazo ✅",
-  "Engenharia de alto padrão não é custo, é investimento no futuro da sua empresa 💼",
-  "5 perguntas que todo cliente deve fazer antes de contratar uma construtora 🏢",
-]
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-function GenerateModal({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState<"loading" | "done">("loading")
+type GeneratedPost = {
+  id: string
+  caption: string
+  image_prompt: string
+  status: string
+  scheduled_for: string | null
+  platform: string
+}
 
-  useState(() => {
-    const t = setTimeout(() => setStep("done"), 2200)
-    return () => clearTimeout(t)
-  })
+// ─── Empty brief factory ──────────────────────────────────────────────────────
 
+function emptyBrief(client_id: string): Partial<DnaBrief> & { client_id: string } {
+  return {
+    client_id,
+    company_name: "",
+    segment: "",
+    city: "",
+    differentials: "",
+    ideal_client_age: "",
+    ideal_client_gender: "",
+    ideal_client_pain: "",
+    ideal_client_dream: "",
+    tone_adjectives: [],
+    tone_avoid: "",
+    tone_example: "",
+    posting_days: ["seg", "qua", "sex"],
+    posting_frequency: 3,
+    platform: "instagram_facebook",
+    content_themes: [],
+    ai_notes: "",
+    version: 0,
+  }
+}
+
+// ─── Modal de geração ─────────────────────────────────────────────────────────
+
+function GenerateModal({
+  posts,
+  loading,
+  error,
+  onClose,
+}: {
+  posts: GeneratedPost[]
+  loading: boolean
+  error: string | null
+  onClose: () => void
+}) {
+  const router = useRouter()
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(10,10,10,0.8)", backdropFilter: "blur(8px)" }}
-      onClick={step === "done" ? onClose : undefined}>
-      <div className="rounded-2xl p-6 w-full max-w-md"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(10,10,10,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={!loading ? onClose : undefined}
+    >
+      <div
+        className="rounded-2xl p-6 w-full max-w-lg"
         style={{ background: "var(--ink-2)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
-        onClick={(e) => e.stopPropagation()}>
-        {step === "loading" ? (
-          <div className="flex flex-col items-center py-8 gap-4">
+        onClick={(e) => e.stopPropagation()}
+      >
+        {loading && (
+          <div className="flex flex-col items-center py-10 gap-5">
             <div className="relative w-16 h-16">
               <div className="absolute inset-0 rounded-full border-2 border-signal/20" />
               <div className="absolute inset-0 rounded-full border-2 border-t-signal animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles size={20} style={{ color: "var(--signal)" }} />
+                <Sparkles size={20} className="text-signal" />
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-[15px] font-semibold text-white mb-1">Gerando conteúdo...</div>
-              <div className="text-[12px] text-stone">A IA está criando os posts com base no DNA da marca</div>
+            <div className="text-center space-y-1">
+              <div className="text-[15px] font-semibold text-white">Gerando conteúdo com IA...</div>
+              <div className="text-[12px] text-stone">Claude está criando posts baseados no DNA da marca</div>
             </div>
           </div>
-        ) : (
+        )}
+
+        {!loading && error && (
           <>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <CheckCircle size={16} style={{ color: "#10B981" }} />
+                <AlertCircle size={16} className="text-signal" />
+                <span className="text-[13px] font-semibold text-white">Erro na geração</span>
+              </div>
+              <button onClick={onClose} className="text-stone hover:text-white"><X size={16} /></button>
+            </div>
+            <p className="text-[13px] text-stone mb-4">{error}</p>
+            {error.includes("ANTHROPIC_API_KEY") && (
+              <div className="p-3 rounded-lg text-[12px] text-amber-400 mb-4"
+                style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                Adicione a chave em <code className="font-mono">.env.local</code>:<br />
+                <code className="font-mono text-[11px]">ANTHROPIC_API_KEY=sk-ant-...</code>
+              </div>
+            )}
+            <button onClick={onClose} className="w-full py-3 rounded-xl text-[12px] font-bold text-white"
+              style={{ background: "var(--signal)" }}>
+              Fechar
+            </button>
+          </>
+        )}
+
+        {!loading && !error && posts.length > 0 && (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-green" />
                 <span className="text-[13px] font-semibold text-white">
-                  {GENERATED_PREVIEW.length} posts gerados!
+                  {posts.length} posts gerados e salvos!
                 </span>
               </div>
               <button onClick={onClose} className="text-stone hover:text-white"><X size={16} /></button>
             </div>
-            <div className="space-y-2 mb-5">
-              {GENERATED_PREVIEW.map((caption, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg"
+
+            <div className="space-y-2 mb-5 max-h-72 overflow-y-auto">
+              {posts.map((post, i) => (
+                <div key={post.id} className="p-3 rounded-lg space-y-1.5"
                   style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
-                  <span className="text-[11px] font-bold text-stone w-5 flex-shrink-0 mt-0.5">#{i + 1}</span>
-                  <span className="text-[12px] text-white leading-snug">{caption}</span>
+                  <div className="flex items-start gap-2">
+                    <span className="text-[10px] font-bold text-stone w-5 flex-shrink-0 mt-0.5">#{i + 1}</span>
+                    <span className="text-[12px] text-white leading-snug flex-1">
+                      {post.caption.split("\n")[0].slice(0, 120)}
+                      {post.caption.length > 120 ? "..." : ""}
+                    </span>
+                  </div>
+                  {post.scheduled_for && (
+                    <div className="text-[10px] text-stone ml-7">
+                      📅 {new Date(post.scheduled_for).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" })}
+                    </div>
+                  )}
+                  {post.image_prompt && (
+                    <div className="text-[10px] text-stone/60 ml-7 italic truncate">
+                      🖼 {post.image_prompt.slice(0, 80)}...
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+
             <p className="text-[12px] text-stone mb-4">
-              Os posts foram adicionados ao Calendário Editorial para revisão.
+              Os posts foram adicionados ao Calendário Editorial com status "gerado" — revise antes de enviar para aprovação.
             </p>
-            <button onClick={onClose}
-              className="w-full py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest text-white"
-              style={{ background: "var(--signal)" }}>
-              Ver no Calendário →
+
+            <button
+              onClick={() => { onClose(); router.push("/calendario") }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest text-white"
+              style={{ background: "var(--signal)" }}
+            >
+              <ExternalLink size={13} />
+              Ver no Calendário
             </button>
           </>
         )}
@@ -77,12 +167,7 @@ function GenerateModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-const BLOCKS = [
-  { id: "empresa", label: "Empresa", icon: Building2, accent: "var(--signal)" },
-  { id: "cliente", label: "Cliente Ideal", icon: Users, accent: "var(--blue)" },
-  { id: "tom", label: "Tom de Voz", icon: MessageCircle, accent: "var(--green)" },
-  { id: "operacional", label: "Operacional", icon: Settings, accent: "var(--amber)" },
-]
+// ─── Field components ─────────────────────────────────────────────────────────
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -99,8 +184,8 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
-      style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+      className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none transition-colors"
+      style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
     />
   )
 }
@@ -112,41 +197,153 @@ function TextArea({ value, onChange, rows = 3, hint }: { value: string; onChange
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors resize-none"
-        style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+        className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none resize-none transition-colors"
+        style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
       />
       {hint && <p className="text-[11px] text-stone mt-1">{hint}</p>}
     </div>
   )
 }
 
+// ─── Blocks config ────────────────────────────────────────────────────────────
+
+const BLOCKS = [
+  { id: "empresa",     label: "Empresa",      icon: Building2,     accent: "var(--signal)" },
+  { id: "cliente",     label: "Cliente Ideal", icon: Users,         accent: "var(--blue)"   },
+  { id: "tom",         label: "Tom de Voz",    icon: MessageCircle, accent: "var(--green)"  },
+  { id: "operacional", label: "Operacional",   icon: Settings,      accent: "var(--amber)"  },
+]
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function HistoriaPage() {
-  const [brief, setBrief] = useState(mockDnaBrief)
+  const { client: selectedClient } = useSelectedClient()
+  const [brief, setBrief] = useState<ReturnType<typeof emptyBrief> | null>(null)
   const [activeBlock, setActiveBlock] = useState("empresa")
   const [saving, setSaving] = useState(false)
+  const [savedOk, setSavedOk] = useState(false)
   const [newTheme, setNewTheme] = useState("")
-  const [showGenerate, setShowGenerate] = useState(false)
+  const [loadingBrief, setLoadingBrief] = useState(false)
+
+  // Generate state
+  const [genLoading, setGenLoading] = useState(false)
+  const [genPosts, setGenPosts] = useState<GeneratedPost[]>([])
+  const [genError, setGenError] = useState<string | null>(null)
+  const [showModal, setShowModal] = useState(false)
+
+  // Load brief when client changes
+  const loadBrief = useCallback(async (clientId: string) => {
+    setLoadingBrief(true)
+    try {
+      const res = await fetch(`/api/dna-brief?client_id=${clientId}`)
+      const json = await res.json()
+      setBrief(json.brief ?? emptyBrief(clientId))
+    } catch {
+      setBrief(emptyBrief(clientId))
+    } finally {
+      setLoadingBrief(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedClient?.id) loadBrief(selectedClient.id)
+  }, [selectedClient?.id, loadBrief])
 
   async function handleSave() {
+    if (!brief || !selectedClient) return
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setSaving(false)
+    try {
+      const res = await fetch("/api/dna-brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...brief, client_id: selectedClient.id }),
+      })
+      const json = await res.json()
+      if (json.brief) setBrief(json.brief)
+      setSavedOk(true)
+      setTimeout(() => setSavedOk(false), 2500)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleGenerate() {
+    if (!brief || !selectedClient) return
+    setGenLoading(true)
+    setGenPosts([])
+    setGenError(null)
+    setShowModal(true)
+
+    try {
+      const res = await fetch("/api/posts/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief, client_id: selectedClient.id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setGenError(json.error ?? "Erro na geração")
+      } else {
+        setGenPosts(json.posts ?? [])
+      }
+    } catch (e: unknown) {
+      setGenError(e instanceof Error ? e.message : "Erro de rede")
+    } finally {
+      setGenLoading(false)
+    }
   }
 
   const toggleDay = (day: string) => {
-    setBrief((prev) => ({
-      ...prev,
-      posting_days: prev.posting_days.includes(day)
-        ? prev.posting_days.filter((d) => d !== day)
-        : [...prev.posting_days, day],
-    }))
+    if (!brief) return
+    setBrief((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        posting_days: prev.posting_days?.includes(day)
+          ? prev.posting_days.filter((d) => d !== day)
+          : [...(prev.posting_days ?? []), day],
+      }
+    })
   }
 
   const addTheme = () => {
-    if (!newTheme.trim()) return
-    setBrief((prev) => ({ ...prev, content_themes: [...prev.content_themes, newTheme.trim()] }))
+    if (!newTheme.trim() || !brief) return
+    setBrief((prev) => {
+      if (!prev) return prev
+      return { ...prev, content_themes: [...(prev.content_themes ?? []), newTheme.trim()] }
+    })
     setNewTheme("")
   }
+
+  const update = (field: string, value: unknown) => {
+    setBrief((prev) => prev ? { ...prev, [field]: value } : prev)
+  }
+
+  // No client selected
+  if (!selectedClient) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+        <div className="text-5xl">🏢</div>
+        <h1 className="font-bebas text-[36px] text-white">Selecione um cliente</h1>
+        <p className="text-stone text-[14px] max-w-sm">
+          Use o seletor na barra lateral para escolher o cliente que deseja configurar.
+        </p>
+      </div>
+    )
+  }
+
+  if (loadingBrief) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center gap-3 text-stone">
+          <RefreshCw size={18} className="animate-spin" />
+          <span className="text-[13px]">Carregando DNA da marca...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!brief) return null
 
   const activeBlockData = BLOCKS.find((b) => b.id === activeBlock)!
 
@@ -157,23 +354,25 @@ export default function HistoriaPage() {
         <div>
           <h1 className="font-bebas text-[40px] text-white leading-none mb-1">Sua História</h1>
           <p className="text-[13px] text-stone">
-            O DNA da marca alimenta toda geração de conteúdo com IA ·{" "}
-            <span className="text-white/60">v{brief.version}</span>
+            {selectedClient.name} · DNA da marca para geração de conteúdo com IA
+            {(brief.version ?? 0) > 0 && (
+              <span className="text-white/40 ml-1">v{brief.version}</span>
+            )}
           </p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-px disabled:opacity-50"
-          style={{ background: "var(--signal)" }}
+          style={{ background: savedOk ? "var(--green)" : "var(--signal)" }}
         >
           {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-          {saving ? "Salvando..." : "Salvar"}
+          {saving ? "Salvando..." : savedOk ? "Salvo!" : "Salvar"}
         </button>
       </div>
 
       {/* Block tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {BLOCKS.map((block) => {
           const Icon = block.icon
           const active = activeBlock === block.id
@@ -200,9 +399,9 @@ export default function HistoriaPage() {
         <div className="flex items-center gap-2 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <activeBlockData.icon size={15} style={{ color: activeBlockData.accent }} />
           <span className="text-[13px] font-semibold text-white">
-            {activeBlock === "empresa" && "Bloco 1 — Empresa"}
-            {activeBlock === "cliente" && "Bloco 2 — Cliente Ideal"}
-            {activeBlock === "tom" && "Bloco 3 — Tom de Voz"}
+            {activeBlock === "empresa"     && "Bloco 1 — Empresa"}
+            {activeBlock === "cliente"     && "Bloco 2 — Cliente Ideal"}
+            {activeBlock === "tom"         && "Bloco 3 — Tom de Voz"}
             {activeBlock === "operacional" && "Bloco 4 — Operacional"}
           </span>
         </div>
@@ -212,24 +411,24 @@ export default function HistoriaPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <FieldLabel>Nome da Empresa</FieldLabel>
-                <TextInput value={brief.company_name} onChange={(v) => setBrief((p) => ({ ...p, company_name: v }))} />
+                <TextInput value={brief.company_name ?? ""} onChange={(v) => update("company_name", v)} />
               </div>
               <div>
                 <FieldLabel>Segmento / Nicho</FieldLabel>
-                <TextInput value={brief.segment} onChange={(v) => setBrief((p) => ({ ...p, segment: v }))} />
+                <TextInput value={brief.segment ?? ""} onChange={(v) => update("segment", v)} placeholder="Ex: Construção civil, Moda feminina" />
               </div>
               <div>
                 <FieldLabel>Cidade</FieldLabel>
-                <TextInput value={brief.city} onChange={(v) => setBrief((p) => ({ ...p, city: v }))} />
+                <TextInput value={brief.city ?? ""} onChange={(v) => update("city", v)} placeholder="Ex: São Paulo, SP" />
               </div>
             </div>
             <div>
               <FieldLabel>Diferenciais Competitivos</FieldLabel>
               <TextArea
-                value={brief.differentials}
-                onChange={(v) => setBrief((p) => ({ ...p, differentials: v }))}
+                value={brief.differentials ?? ""}
+                onChange={(v) => update("differentials", v)}
                 rows={4}
-                hint="Descreva o que torna sua empresa única no mercado."
+                hint="O que torna sua empresa única? Tecnologia, atendimento, preço, localização?"
               />
             </div>
           </div>
@@ -240,27 +439,27 @@ export default function HistoriaPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <FieldLabel>Faixa Etária</FieldLabel>
-                <TextInput value={brief.ideal_client_age} onChange={(v) => setBrief((p) => ({ ...p, ideal_client_age: v }))} placeholder="Ex: 28-45 anos" />
+                <TextInput value={brief.ideal_client_age ?? ""} onChange={(v) => update("ideal_client_age", v)} placeholder="Ex: 28-45 anos" />
               </div>
               <div>
                 <FieldLabel>Gênero</FieldLabel>
-                <TextInput value={brief.ideal_client_gender} onChange={(v) => setBrief((p) => ({ ...p, ideal_client_gender: v }))} placeholder="Ex: Masculino, Feminino ou Qualquer" />
+                <TextInput value={brief.ideal_client_gender ?? ""} onChange={(v) => update("ideal_client_gender", v)} placeholder="Masculino, Feminino ou Qualquer" />
               </div>
             </div>
             <div>
               <FieldLabel>Maior Dor / Problema</FieldLabel>
               <TextArea
-                value={brief.ideal_client_pain}
-                onChange={(v) => setBrief((p) => ({ ...p, ideal_client_pain: v }))}
+                value={brief.ideal_client_pain ?? ""}
+                onChange={(v) => update("ideal_client_pain", v)}
                 rows={3}
-                hint="O que mantém seu cliente acordado à noite?"
+                hint="O que mantém seu cliente acordado à noite? O que eles mais temem?"
               />
             </div>
             <div>
               <FieldLabel>Sonho / Desejo</FieldLabel>
               <TextArea
-                value={brief.ideal_client_dream}
-                onChange={(v) => setBrief((p) => ({ ...p, ideal_client_dream: v }))}
+                value={brief.ideal_client_dream ?? ""}
+                onChange={(v) => update("ideal_client_dream", v)}
                 rows={3}
                 hint="O que seu cliente quer conquistar com seu produto/serviço?"
               />
@@ -273,10 +472,10 @@ export default function HistoriaPage() {
             <div>
               <FieldLabel>Adjetivos do Tom</FieldLabel>
               <div className="flex flex-wrap gap-2 mb-3">
-                {brief.tone_adjectives.map((adj) => (
+                {(brief.tone_adjectives ?? []).map((adj) => (
                   <button
                     key={adj}
-                    onClick={() => setBrief((p) => ({ ...p, tone_adjectives: p.tone_adjectives.filter((a) => a !== adj) }))}
+                    onClick={() => update("tone_adjectives", (brief.tone_adjectives ?? []).filter((a) => a !== adj))}
                     className="text-[11px] font-semibold px-3 py-1 rounded-full transition-colors"
                     style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)", color: "var(--green)" }}
                   >
@@ -285,14 +484,14 @@ export default function HistoriaPage() {
                 ))}
               </div>
               <input
-                className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
-                style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
-                placeholder="Adicionar adjetivo... (Enter para confirmar)"
+                className="w-full px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none transition-colors"
+                style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
+                placeholder="Adicionar adjetivo (Enter para confirmar)..."
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const val = (e.target as HTMLInputElement).value.trim()
                     if (val) {
-                      setBrief((p) => ({ ...p, tone_adjectives: [...p.tone_adjectives, val] }));
+                      update("tone_adjectives", [...(brief.tone_adjectives ?? []), val]);
                       (e.target as HTMLInputElement).value = ""
                     }
                   }
@@ -301,15 +500,15 @@ export default function HistoriaPage() {
             </div>
             <div>
               <FieldLabel>O que evitar no tom</FieldLabel>
-              <TextArea value={brief.tone_avoid} onChange={(v) => setBrief((p) => ({ ...p, tone_avoid: v }))} rows={2} />
+              <TextArea value={brief.tone_avoid ?? ""} onChange={(v) => update("tone_avoid", v)} rows={2} hint="Gírias, palavrões, termos técnicos demais, humor inadequado..." />
             </div>
             <div>
-              <FieldLabel>Exemplo de frase ideal</FieldLabel>
+              <FieldLabel>Exemplo de frase ideal da marca</FieldLabel>
               <TextArea
-                value={brief.tone_example}
-                onChange={(v) => setBrief((p) => ({ ...p, tone_example: v }))}
+                value={brief.tone_example ?? ""}
+                onChange={(v) => update("tone_example", v)}
                 rows={3}
-                hint="Escreva uma frase que capture perfeitamente o tom da marca."
+                hint="Uma frase que capture perfeitamente o tom que você quer transmitir."
               />
             </div>
           </div>
@@ -325,7 +524,7 @@ export default function HistoriaPage() {
                     key={key}
                     onClick={() => toggleDay(key)}
                     className="px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all"
-                    style={brief.posting_days.includes(key)
+                    style={(brief.posting_days ?? []).includes(key)
                       ? { background: "var(--signal)", color: "var(--cream)", border: "1px solid var(--signal)" }
                       : { background: "var(--ink-3)", color: "var(--stone)", border: "1px solid var(--border)" }
                     }
@@ -338,22 +537,22 @@ export default function HistoriaPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FieldLabel>Frequência Semanal</FieldLabel>
+                <FieldLabel>Posts por semana</FieldLabel>
                 <input
                   type="number" min={1} max={7}
-                  value={brief.posting_frequency}
-                  onChange={(e) => setBrief((p) => ({ ...p, posting_frequency: parseInt(e.target.value) }))}
-                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none focus:border-signal transition-colors"
-                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+                  value={brief.posting_frequency ?? 3}
+                  onChange={(e) => update("posting_frequency", parseInt(e.target.value))}
+                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
                 />
               </div>
               <div>
                 <FieldLabel>Plataforma</FieldLabel>
                 <select
-                  value={brief.platform}
-                  onChange={(e) => setBrief((p) => ({ ...p, platform: e.target.value as any }))}
-                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none focus:border-signal transition-colors"
-                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
+                  value={brief.platform ?? "instagram_facebook"}
+                  onChange={(e) => update("platform", e.target.value as SocialPlatform)}
+                  className="w-full px-4 py-3 text-[13px] text-white rounded-lg outline-none transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
                 >
                   <option value="instagram">Instagram</option>
                   <option value="facebook">Facebook</option>
@@ -365,12 +564,17 @@ export default function HistoriaPage() {
             <div>
               <FieldLabel>Temas de Conteúdo</FieldLabel>
               <div className="flex flex-wrap gap-2 mb-3">
-                {brief.content_themes.map((theme) => (
-                  <span key={theme} className="flex items-center gap-1 text-[11px] px-3 py-1 rounded-full"
+                {(brief.content_themes ?? []).map((theme) => (
+                  <span key={theme}
+                    className="flex items-center gap-1 text-[11px] px-3 py-1 rounded-full"
                     style={{ background: "var(--ink-3)", border: "1px solid var(--border)", color: "var(--cream)" }}>
                     {theme}
-                    <button onClick={() => setBrief((p) => ({ ...p, content_themes: p.content_themes.filter((t) => t !== theme) }))}
-                      className="text-stone hover:text-signal ml-0.5">×</button>
+                    <button
+                      onClick={() => update("content_themes", (brief.content_themes ?? []).filter((t) => t !== theme))}
+                      className="text-stone hover:text-signal ml-0.5"
+                    >
+                      ×
+                    </button>
                   </span>
                 ))}
               </div>
@@ -379,14 +583,14 @@ export default function HistoriaPage() {
                   value={newTheme}
                   onChange={(e) => setNewTheme(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") addTheme() }}
-                  className="flex-1 px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none focus:border-signal transition-colors"
-                  style={{ background: "var(--ink-3)", border: "1px solid var(--ink-border)" }}
-                  placeholder="Novo tema..."
+                  className="flex-1 px-4 py-3 text-[13px] text-white placeholder:text-stone/40 rounded-lg outline-none transition-colors"
+                  style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}
+                  placeholder="Novo tema... (Enter para adicionar)"
                 />
                 <button onClick={addTheme}
                   className="px-4 py-3 rounded-lg text-[12px] font-semibold text-white transition-colors"
                   style={{ background: "var(--ink-3)", border: "1px solid var(--border)" }}>
-                  Adicionar
+                  + Adicionar
                 </button>
               </div>
             </div>
@@ -395,34 +599,48 @@ export default function HistoriaPage() {
               <FieldLabel>Notas para a IA</FieldLabel>
               <TextArea
                 value={brief.ai_notes ?? ""}
-                onChange={(v) => setBrief((p) => ({ ...p, ai_notes: v }))}
+                onChange={(v) => update("ai_notes", v)}
                 rows={3}
-                hint="Instruções especiais que a IA deve considerar na geração de conteúdo."
+                hint="Instruções especiais: produtos em destaque, datas importantes, o que NÃO mencionar..."
               />
             </div>
           </div>
         )}
       </div>
 
-      {/* AI Generate */}
-      <div className="flex items-center gap-4 px-5 py-4 rounded-xl"
-        style={{ background: "rgba(214,64,69,0.08)", border: "1px solid rgba(214,64,69,0.22)" }}>
+      {/* AI Generate CTA */}
+      <div
+        className="flex items-center gap-4 px-5 py-4 rounded-xl"
+        style={{ background: "rgba(214,64,69,0.08)", border: "1px solid rgba(214,64,69,0.22)" }}
+      >
         <div className="p-2.5 rounded-lg" style={{ background: "rgba(214,64,69,0.15)" }}>
-          <Sparkles size={16} style={{ color: "var(--signal)" }} />
+          <Sparkles size={16} className="text-signal" />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="text-[13px] font-semibold text-white">Gerar Conteúdo com IA</div>
-          <div className="text-[11px] text-stone">Baseado no DNA atual, a IA vai criar os posts da próxima semana.</div>
+          <div className="text-[11px] text-stone">
+            Claude vai criar {(brief.posting_frequency ?? 3) * 2} posts com copy, prompt de imagem e datas sugeridas.
+            Salve o DNA antes de gerar.
+          </div>
         </div>
-        <button onClick={() => setShowGenerate(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
-          style={{ background: "var(--signal)" }}>
+        <button
+          onClick={() => { handleSave().then(handleGenerate) }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity flex-shrink-0"
+          style={{ background: "var(--signal)" }}
+        >
           <Sparkles size={13} />
           Gerar Agora
         </button>
       </div>
 
-      {showGenerate && <GenerateModal onClose={() => setShowGenerate(false)} />}
+      {showModal && (
+        <GenerateModal
+          posts={genPosts}
+          loading={genLoading}
+          error={genError}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   )
 }
