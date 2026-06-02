@@ -10,11 +10,11 @@ function isPublicPath(pathname: string) {
 }
 
 // ─── Rate limit configs ──────────────────────────────────────────────────────
-// Login: 10 tentativas/min por IP (anti brute-force)
+// Login: 30 tentativas/min por IP (inclui redirects automáticos do browser)
 // API:   120 req/min por IP
 // Global: 300 req/min por IP (guarda contra bots/DDoS)
 const LIMITS = {
-  login:  { limit: 10,  windowMs: 60_000 },
+  login:  { limit: 30,  windowMs: 60_000 },
   api:    { limit: 120, windowMs: 60_000 },
   global: { limit: 300, windowMs: 60_000 },
 }
