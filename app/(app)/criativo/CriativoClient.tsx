@@ -48,9 +48,10 @@ type GeneratedPost = {
 
 type InterviewAnswers = {
   objetivo: string
-  volume: number
-  autoridade: string
+  volume: string
   foco: string
+  autoridade: string
+  tom: string
 }
 
 // ─── Interview questions ──────────────────────────────────────────────────────
@@ -58,33 +59,58 @@ type InterviewAnswers = {
 const QUESTIONS = [
   {
     id: "objetivo",
-    text: "Qual o objetivo principal desse planejamento?",
-    type: "choice" as const,
+    text: "Qual o objetivo principal?",
     options: [
-      { value: "leads", label: "🎯 Gerar leads / captar clientes" },
-      { value: "awareness", label: "📣 Aumentar alcance e awareness" },
+      { value: "leads",       label: "🎯 Captar clientes / leads" },
+      { value: "awareness",   label: "📣 Alcance e awareness" },
       { value: "engajamento", label: "🔥 Engajamento e comunidade" },
-      { value: "vendas", label: "💰 Vender produto/serviço direto" },
-      { value: "autoridade", label: "👑 Posicionamento e autoridade" },
+      { value: "vendas",      label: "💰 Vender produto ou serviço" },
+      { value: "autoridade",  label: "👑 Posicionamento e autoridade" },
     ],
   },
   {
     id: "volume",
-    text: "Quantos posts esse planejamento deve ter?",
-    type: "text" as const,
-    placeholder: "Ex: 12 posts para 2 semanas, 36 para o trimestre...",
-  },
-  {
-    id: "autoridade",
-    text: "Quer transmitir autoridade? Me conta: há quanto tempo a empresa está no mercado, resultados, cases ou premiações. 🎤 Pode falar pelo microfone.",
-    type: "text" as const,
-    placeholder: "Ex: 6 anos no mercado, +500 clientes, premiação X...",
+    text: "Quantos posts no planejamento?",
+    options: [
+      { value: "6",  label: "📆 6 posts — 2 semanas"      },
+      { value: "12", label: "📅 12 posts — 1 mês"         },
+      { value: "20", label: "📊 20 posts — 1 mês intenso" },
+      { value: "30", label: "🚀 30 posts — trimestre"     },
+      { value: "36", label: "⚡ 36 posts — 3× por semana" },
+    ],
   },
   {
     id: "foco",
-    text: "Tem algum produto, serviço ou mensagem específica que deve ser o foco? Ou é posicionamento institucional geral?",
-    type: "text" as const,
-    placeholder: "Ex: Lançamento do plano Pro, destaque para o atendimento...",
+    text: "Qual o foco do período?",
+    options: [
+      { value: "institucional", label: "🏛️ Posicionamento institucional" },
+      { value: "produto",       label: "🛒 Produto ou serviço específico" },
+      { value: "promocao",      label: "🎉 Promoção ou desconto"          },
+      { value: "lancamento",    label: "🚀 Lançamento de novidade"         },
+      { value: "captacao",      label: "🎯 Captação de leads"              },
+    ],
+  },
+  {
+    id: "autoridade",
+    text: "Há quanto tempo a empresa está no mercado?",
+    options: [
+      { value: "menos_1", label: "🌱 Menos de 1 ano"   },
+      { value: "1_3",     label: "📈 1 a 3 anos"       },
+      { value: "4_7",     label: "💪 4 a 7 anos"       },
+      { value: "8_15",    label: "🏆 8 a 15 anos"      },
+      { value: "mais_15", label: "👑 Mais de 15 anos"  },
+    ],
+  },
+  {
+    id: "tom",
+    text: "Tom da campanha?",
+    options: [
+      { value: "urgente",      label: "🔥 Urgente e direto"         },
+      { value: "educativo",    label: "💡 Educativo e informativo"  },
+      { value: "descontraido", label: "😊 Leve e descontraído"      },
+      { value: "premium",      label: "💎 Premium e aspiracional"   },
+      { value: "humano",       label: "🤝 Humano e próximo"         },
+    ],
   },
 ]
 
@@ -493,13 +519,9 @@ function InterviewChat({
 }) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Partial<InterviewAnswers>>({})
-  const [inputValue, setInputValue] = useState("")
   const [listening, setListening] = useState(false)
   const [messages, setMessages] = useState<{ from: "nova" | "user"; text: string }[]>([
-    {
-      from: "nova",
-      text: `Olá! Sou a NOVA, Diretora Criativa da No Agency. Vou criar o planejamento de criativos para **${clientName}**.\n\nResponda as perguntas abaixo — pode digitar ou usar o microfone 🎤`,
-    },
+    { from: "nova", text: `Sou a NOVA, sua Diretora Criativa. Vou montar o planejamento de **${clientName}**.` },
     { from: "nova", text: QUESTIONS[0].text },
   ])
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -519,7 +541,7 @@ function InterviewChat({
     type RecognitionCtor = { new(): RecognitionInstance }
     const w = window as unknown as Record<string, unknown>
     const Ctor = (w.SpeechRecognition || w.webkitSpeechRecognition) as RecognitionCtor | undefined
-    if (!Ctor) { alert("Microfone não suportado neste navegador."); return }
+    if (!Ctor) return
 
     const recognition = new Ctor()
     recognition.lang = "pt-BR"
@@ -528,8 +550,15 @@ function InterviewChat({
     recognitionRef.current = recognition
 
     recognition.onresult = (e) => {
-      const transcript = Array.from(e.results)[0][0].transcript
-      setInputValue((prev) => prev + (prev ? " " : "") + transcript)
+      const transcript = Array.from(e.results)[0][0].transcript.trim()
+      if (!transcript) { setListening(false); return }
+      // Try to match transcript to current question options
+      const currentQ = QUESTIONS[step]
+      const match = currentQ.options.find((o) =>
+        o.label.toLowerCase().includes(transcript.toLowerCase()) ||
+        transcript.toLowerCase().includes(o.value.toLowerCase())
+      ) ?? currentQ.options[0]
+      handleChoiceSelect(match.value, match.label)
       setListening(false)
     }
     recognition.onerror = () => setListening(false)
@@ -551,44 +580,30 @@ function InterviewChat({
     advance(newAnswers, step)
   }
 
-  function handleSubmit() {
-    if (!inputValue.trim()) return
-    const key = QUESTIONS[step].id as keyof InterviewAnswers
-    const value = key === "volume"
-      ? parseInt(inputValue.match(/\d+/)?.[0] ?? "12")
-      : inputValue.trim()
-    const newAnswers = { ...answers, [key]: value as string & number }
-    setAnswers(newAnswers)
-    setMessages((prev) => [...prev, { from: "user", text: inputValue.trim() }])
-    setInputValue("")
-    advance(newAnswers, step)
-  }
-
   function advance(currentAnswers: Partial<InterviewAnswers>, currentStep: number) {
     const nextStep = currentStep + 1
     if (nextStep < QUESTIONS.length) {
       setTimeout(() => {
         setMessages((prev) => [...prev, { from: "nova", text: QUESTIONS[nextStep].text }])
         setStep(nextStep)
-      }, 400)
+      }, 350)
     } else {
       setTimeout(() => {
         setMessages((prev) => [...prev, {
           from: "nova",
-          text: "Perfeito! Tenho tudo que preciso. Vou criar o planejamento agora — aguarda alguns instantes... ✨",
+          text: "Perfeito. Gerando o planejamento agora... ✨",
         }])
-        setTimeout(() => onComplete(currentAnswers as InterviewAnswers), 1200)
-      }, 400)
+        setTimeout(() => onComplete(currentAnswers as InterviewAnswers), 900)
+      }, 350)
     }
   }
 
-  const currentQ = QUESTIONS[step]
   const isComplete = step >= QUESTIONS.length
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100vh - 160px)" }}>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 px-1">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-4 px-1 no-scrollbar">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.from === "user" ? "flex-row-reverse" : ""}`}>
             {msg.from === "nova" && (
@@ -602,74 +617,50 @@ function InterviewChat({
                 ? { background: "var(--ink-2)", border: "1px solid var(--border)", color: "var(--cream)", borderTopLeftRadius: 4 }
                 : { background: "var(--signal)", color: "white", borderTopRightRadius: 4 }
               }
-              dangerouslySetInnerHTML={{
-                __html: msg.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
-              }}
+              dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
             />
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input area */}
+      {/* Choice buttons */}
       {!isComplete && (
         <div className="pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          {currentQ.type === "choice" && currentQ.options ? (
-            <div className="grid grid-cols-1 gap-2">
-              {currentQ.options.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleChoiceSelect(opt.value, opt.label)}
-                  className="text-left px-4 py-3 rounded-xl text-[13px] text-white hover:border-signal transition-all"
-                  style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit() } }}
-                placeholder={currentQ.placeholder}
-                className="flex-1 px-4 py-3 rounded-xl text-[13px] text-white placeholder:text-stone focus:outline-none"
+          <div className="grid grid-cols-1 gap-2">
+            {QUESTIONS[step].options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleChoiceSelect(opt.value, opt.label)}
+                className="text-left px-4 py-3 rounded-xl text-[13px] text-white transition-all hover:border-signal"
                 style={{ background: "var(--ink-2)", border: "1px solid var(--border)" }}
-                autoFocus
-              />
-              <button
-                onClick={listening ? stopListening : startListening}
-                className="p-3 rounded-xl transition-all"
-                style={{
-                  background: listening ? "rgba(214,64,69,0.2)" : "var(--ink-2)",
-                  border: `1px solid ${listening ? "var(--signal)" : "var(--border)"}`,
-                }}
-                title="Falar pelo microfone"
               >
-                {listening
-                  ? <MicOff size={16} className="text-signal animate-pulse" />
-                  : <Mic size={16} className="text-stone" />
-                }
+                {opt.label}
               </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!inputValue.trim()}
-                className="p-3 rounded-xl transition-all disabled:opacity-40"
-                style={{ background: "var(--signal)" }}
-              >
-                <Send size={16} className="text-white" />
-              </button>
-            </div>
-          )}
+            ))}
+          </div>
 
-          {/* Progress */}
+          {/* Progress + mic */}
           <div className="flex items-center gap-2 mt-3">
             {QUESTIONS.map((_, i) => (
               <div key={i} className="h-1 flex-1 rounded-full transition-all"
                 style={{ background: i < step ? "var(--signal)" : i === step ? "rgba(214,64,69,0.4)" : "var(--ink-3)" }} />
             ))}
-            <span className="text-[10px] text-stone ml-1">{step + 1}/{QUESTIONS.length}</span>
+            <span className="text-[10px] text-stone">{step + 1}/{QUESTIONS.length}</span>
+            <button
+              onClick={listening ? stopListening : startListening}
+              className="ml-1 p-1.5 rounded-lg transition-all"
+              style={{
+                background: listening ? "rgba(214,64,69,0.2)" : "transparent",
+                border: `1px solid ${listening ? "var(--signal)" : "transparent"}`,
+              }}
+              title="Responder pelo microfone"
+            >
+              {listening
+                ? <MicOff size={13} className="text-signal animate-pulse" />
+                : <Mic size={13} className="text-stone/60 hover:text-stone" />
+              }
+            </button>
           </div>
         </div>
       )}

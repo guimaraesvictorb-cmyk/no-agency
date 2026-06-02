@@ -24,7 +24,7 @@ O gancho (1ª linha) deve parar o scroll em menos de 2 segundos.
 Responda APENAS com JSON válido, sem markdown, sem explicações fora do JSON.`
 
   const variacoes = plano === "starter" ? 1 : plano === "growth" ? 2 : 3
-  const numPosts = answers.volume ?? 12
+  const numPosts = parseInt(String(answers.volume ?? "12")) || 12
 
   const userPrompt = `Gere ${numPosts} posts para o planejamento abaixo.
 
@@ -41,10 +41,11 @@ Temas: ${(brief?.content_themes ?? []).join(", ")}
 Notas IA: ${brief?.ai_notes ?? ""}
 
 === ENTREVISTA ===
-Objetivo: ${answers.objetivo ?? "Posicionamento e autoridade"}
+Objetivo: ${answers.objetivo ?? "autoridade"}
 Volume: ${numPosts} posts
-Autoridade/história: ${answers.autoridade ?? ""}
-Foco do período: ${answers.foco ?? "Institucional"}
+Foco do período: ${answers.foco ?? "institucional"}
+Tempo de mercado: ${answers.autoridade ?? "4_7"}
+Tom da campanha: ${answers.tom ?? "humano"}
 Plano: ${plano?.toUpperCase() ?? "PRO"} (${variacoes} variação${variacoes > 1 ? "ões" : ""} por post)
 
 === REGRAS ===
@@ -102,7 +103,7 @@ Responda SOMENTE com este JSON (sem texto fora):
 
   try {
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-opus-4-7",
       max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],

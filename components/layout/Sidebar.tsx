@@ -64,10 +64,17 @@ const NAV_CLIENT = [
   {
     section: "Principal",
     items: [
-      { href: "/dashboard",  label: "Dashboard",      icon: LayoutDashboard },
-      { href: "/historia",   label: "Minha História", icon: Sparkles        },
-      { href: "/criativo",   label: "Gerar Criativos", icon: Wand2          },
-      { href: "/calendario", label: "Calendário",     icon: CalendarDays    },
+      { href: "/dashboard",  label: "Dashboard",       icon: LayoutDashboard },
+      { href: "/historia",   label: "Minha História",  icon: Sparkles        },
+      { href: "/criativo",   label: "Gerar Criativos", icon: Wand2           },
+      { href: "/calendario", label: "Calendário",      icon: CalendarDays    },
+      { href: "/relatorio",  label: "Relatório",       icon: BarChart3       },
+    ],
+  },
+  {
+    section: "Integrações",
+    items: [
+      { href: "/midias-sociais", label: "Mídias Sociais", icon: Share2 },
     ],
   },
   {
