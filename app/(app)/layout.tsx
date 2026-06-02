@@ -7,15 +7,14 @@ import SupportButton from "@/components/ui/SupportButton"
 import { ClientProvider } from "@/lib/context/ClientContext"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const profile = await getCurrentProfile()
-  if (!profile) redirect("/login")
-
-  // Load clients for the sidebar selector
   const supabase = await createClient()
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("id, name, plan, status")
-    .order("name", { ascending: true })
+
+  const [profile, { data: clients }] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("clients").select("id, name, plan, status").order("name", { ascending: true }),
+  ])
+
+  if (!profile) redirect("/login")
 
   return (
     <ClientProvider>

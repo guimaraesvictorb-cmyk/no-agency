@@ -98,8 +98,7 @@ export default function Sidebar({ profile, clients = [] }: { profile: Profile; c
   const NAV = isAdmin ? NAV_ADMIN : NAV_CLIENT
   const displayName = profile.full_name ?? profile.email.split("@")[0]
 
-  // Auto-select first client for admin if none selected
-  if (isAdmin && !selectedClient && clients.length > 0 && typeof window !== "undefined") {
+  if (!selectedClient && clients.length > 0 && typeof window !== "undefined") {
     setClient(clients[0])
   }
 
@@ -189,7 +188,7 @@ export default function Sidebar({ profile, clients = [] }: { profile: Profile; c
                 )}
               </div>
               <div className="text-[10px] text-stone tracking-wide">
-                {isAdmin ? "Administrador" : "Cliente"}
+                {isAdmin ? "Administrador" : (activeClient?.name ?? "Cliente")}
               </div>
             </div>
             <button
@@ -203,15 +202,15 @@ export default function Sidebar({ profile, clients = [] }: { profile: Profile; c
         )}
       </div>
 
-      {/* Client selector — visible for admin with multiple clients */}
-      {isAdmin && clients.length > 0 && (
+      {/* Client selector — visible for all users with multiple clients */}
+      {clients.length > 1 && (
         <div className="px-3 py-3 relative" style={{ borderBottom: "1px solid var(--border)" }}>
           <button
             onClick={() => setShowClientMenu(!showClientMenu)}
             className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-ink-3 transition-colors"
             style={{ background: "rgba(214,64,69,0.10)", border: "1px solid rgba(214,64,69,0.22)" }}
           >
-            <div className="text-[9px] text-signal uppercase tracking-[1.5px] font-semibold">Plano ativo</div>
+            <div className="text-[9px] text-signal uppercase tracking-[1.5px] font-semibold">Empresa</div>
             <div className="text-[13px] font-bold text-white mt-0.5 flex items-center justify-between">
               {activeClient?.name ?? "Selecionar cliente"}
               <svg className={cn("w-3 h-3 text-stone transition-transform", showClientMenu && "rotate-180")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
