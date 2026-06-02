@@ -69,7 +69,7 @@ const NAV_CLIENT = [
     section: "Principal",
     items: [
       { href: "/dashboard",  label: "Dashboard",      icon: LayoutDashboard },
-      { href: "/historia",   label: "Minha Marca",    icon: Sparkles        },
+      { href: "/historia",   label: "Minha História", icon: Sparkles        },
       { href: "/criativo",   label: "Gerar Criativos", icon: Wand2          },
       { href: "/calendario", label: "Calendário",     icon: CalendarDays    },
     ],
