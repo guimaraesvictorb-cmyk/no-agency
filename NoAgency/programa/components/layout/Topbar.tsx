@@ -173,7 +173,7 @@ export default function Topbar({ role }: { role: string }) {
               >
                 <div className="flex items-center justify-between px-4 py-3"
                   style={{ borderBottom: "1px solid var(--border)" }}>
-                  <span className="text-[13px] font-semibold text-white">Notificações</span>
+                  <span className="text-[13px] font-semibold text-cream">Notificações</span>
                   {unread > 0 && (
                     <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                       style={{ background: "rgba(214,64,69,0.15)", color: "var(--signal)" }}>
@@ -193,7 +193,7 @@ export default function Topbar({ role }: { role: string }) {
                         {n.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[12px] font-semibold text-white">{n.title}</div>
+                        <div className="text-[12px] font-semibold text-cream">{n.title}</div>
                         <div className="text-[11px] text-stone truncate">{n.sub}</div>
                       </div>
                       <span className="text-[10px] text-stone/50 flex-shrink-0">{n.time}</span>
@@ -225,10 +225,10 @@ export default function Topbar({ role }: { role: string }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar posts, clientes..."
-                className="flex-1 bg-transparent text-[14px] text-white placeholder:text-stone focus:outline-none"
+                className="flex-1 bg-transparent text-[14px] text-cream placeholder:text-stone focus:outline-none"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-stone hover:text-white">
+                <button onClick={() => setSearchQuery("")} className="text-stone hover:text-cream">
                   <X size={14} />
                 </button>
               )}
@@ -255,7 +255,7 @@ export default function Topbar({ role }: { role: string }) {
                     <FileText size={13} className="text-signal" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] text-white truncate">{r.title}</div>
+                    <div className="text-[13px] text-cream truncate">{r.title}</div>
                     <div className="text-[11px] text-stone">{r.sub}</div>
                   </div>
                 </a>
@@ -271,7 +271,7 @@ export default function Topbar({ role }: { role: string }) {
                   ].map((item) => (
                     <a key={item.href} href={item.href}
                       onClick={() => setSearchOpen(false)}
-                      className="flex items-center gap-3 py-2 text-[13px] text-stone hover:text-white transition-colors">
+                      className="flex items-center gap-3 py-2 text-[13px] text-stone hover:text-cream transition-colors">
                       <CalendarDays size={13} />
                       {item.label}
                     </a>

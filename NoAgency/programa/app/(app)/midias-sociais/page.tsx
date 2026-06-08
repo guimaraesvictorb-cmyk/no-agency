@@ -24,7 +24,7 @@ export default async function MidiasSociaisPage() {
   const supabase = await createClient()
   const { data: client } = await supabase
     .from("clients")
-    .select("id, name")
+    .select("id, name, plan")
     .or(`profile_id.eq.${profile.id},user_id.eq.${profile.id}`)
     .limit(1)
     .maybeSingle()
@@ -33,7 +33,7 @@ export default async function MidiasSociaisPage() {
 
   return (
     <Suspense fallback={null}>
-      <SocialPageClientSimple clientId={client.id} clientName={client.name} />
+      <SocialPageClientSimple clientId={client.id} clientName={client.name} plan={client.plan ?? "starter"} />
     </Suspense>
   )
 }
