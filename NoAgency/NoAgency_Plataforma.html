@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Agency — Plataforma</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & VARS ──────────────────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#0A0A0A; --ink2:#111111; --ink3:#1A1A1A; --ink4:#242424;
+  --cream:#F0EBE3; --cream2:#E8E2DA;
+  --red:#D64045; --red2:#B83338;
+  --white:#FFFFFF; --gray:#8A8582; --lgray:#3A3A3A; --mgray:#555;
+  --green:#10B981; --amber:#F59E0B; --blue:#6366F1;
+  --border:rgba(255,255,255,.07);
+  --r:8px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins',sans-serif;background:var(--ink);color:var(--white);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCROLLBAR ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--ink2);}
+::-webkit-scrollbar-thumb{background:var(--lgray);border-radius:2px;}
+
+/* ── SCREENS ───────────────────────────────────────────────────────────────── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════════════════════════════════════════ */
+#screen-login{
+  align-items:stretch;
+}
+.login-left{
+  width:52%;background:var(--red);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:56px 64px;position:relative;overflow:hidden;
+}
+/* Diagonal lines texture */
+.login-left::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(-45deg,rgba(0,0,0,.06) 0,rgba(0,0,0,.06) 1px,transparent 1px,transparent 40px);
+}
+.login-left-content{position:relative;z-index:1;}
+.login-brand{display:flex;align-items:center;gap:14px;margin-bottom:72px;}
+.login-brand-cluster{width:44px;height:44px;}
+.login-brand-vbar{width:1px;height:34px;background:rgba(255,255,255,.35);}
+.login-brand-text{display:flex;flex-direction:column;gap:0;line-height:1;}
+.login-brand-no{font-weight:700;font-size:15px;color:#fff;display:flex;align-items:center;gap:4px;}
+.login-brand-dot{width:5px;height:5px;border-radius:50%;background:var(--ink);}
+.login-brand-agency{font-weight:300;font-size:15px;color:#fff;}
+
+.login-headline{font-family:'Bebas Neue',sans-serif;font-size:86px;line-height:.9;color:#fff;margin-bottom:28px;}
+.login-headline span{color:rgba(255,255,255,.35);}
+.login-sub{font-size:15px;color:rgba(255,255,255,.7);line-height:1.65;max-width:360px;}
+
+.login-bottom{position:relative;z-index:1;}
+.login-stats{display:flex;gap:48px;}
+.login-stat-n{font-family:'Bebas Neue',sans-serif;font-size:44px;color:#fff;line-height:1;}
+.login-stat-l{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase;}
+
+/* RIGHT — form */
+.login-right{
+  width:48%;background:var(--ink2);
+  display:flex;align-items:center;justify-content:center;
+  padding:56px 64px;
+}
+.login-form-wrap{width:100%;max-width:380px;}
+.login-form-title{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--white);margin-bottom:6px;}
+.login-form-sub{font-size:13px;color:var(--gray);margin-bottom:36px;}
+
+.form-group{margin-bottom:20px;}
+.form-label{display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;}
+.form-input{
+  width:100%;background:var(--ink3);border:1px solid var(--lgray);
+  color:var(--white);padding:14px 16px;font-size:14px;font-family:'Poppins',sans-serif;
+  border-radius:var(--r);outline:none;transition:border-color .2s;
+}
+.form-input:focus{border-color:var(--red);}
+.form-input::placeholder{color:var(--mgray);}
+
+.btn-login{
+  width:100%;background:var(--red);color:#fff;border:none;
+  padding:15px;font-size:13px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;border-radius:var(--r);cursor:pointer;
+  transition:background .2s,transform .15s;margin-top:8px;
+  font-family:'Poppins',sans-serif;
+}
+.btn-login:hover{background:var(--red2);transform:translateY(-1px);}
+
+.login-forgot{display:block;text-align:center;font-size:12px;color:var(--gray);margin-top:18px;text-decoration:none;transition:color .2s;}
+.login-forgot:hover{color:var(--white);}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════════════════════════════════════════ */
+#screen-app{display:none;flex-direction:row;}
+#screen-app.active{display:flex;}
+
+/* ── SIDEBAR ───────────────────────────────────────────────────────────────── */
+.sidebar{
+  width:240px;min-height:100vh;background:var(--ink2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;z-index:50;
+}
+.sidebar-brand{
+  padding:24px 20px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-brand-text .no{font-weight:700;font-size:13px;display:flex;align-items:center;gap:3px;}
+.sidebar-brand-text .dot{width:4px;height:4px;border-radius:50%;background:var(--red);}
+.sidebar-brand-text .agency{font-weight:300;font-size:13px;}
+.sidebar-brand-text .tag{font-size:9px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+
+.sidebar-user{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.sidebar-avatar{
+  width:38px;height:38px;border-radius:50%;background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;color:#fff;flex-shrink:0;
+}
+.sidebar-user-info{overflow:hidden;}
+.sidebar-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-user-plan{font-size:10px;color:var(--gray);letter-spacing:.5px;}
+
+.sidebar-plan-badge{
+  margin:12px 20px;padding:10px 14px;
+  background:rgba(214,64,69,.12);border:1px solid rgba(214,64,69,.25);
+  border-radius:var(--r);
+}
+.sidebar-plan-label{font-size:9px;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+.sidebar-plan-name{font-size:13px;font-weight:700;color:var(--white);margin-top:2px;}
+.sidebar-plan-renewal{font-size:10px;color:var(--gray);margin-top:1px;}
+
+.sidebar-nav{flex:1;padding:12px 12px;overflow-y:auto;}
+.sidebar-nav-section{font-size:9px;color:var(--mgray);letter-spacing:2px;text-transform:uppercase;padding:12px 8px 6px;font-weight:600;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--r);
+  font-size:13px;color:var(--gray);cursor:pointer;
+  transition:all .2s;margin-bottom:2px;position:relative;
+}
+.nav-item:hover{background:var(--ink3);color:var(--white);}
+.nav-item.active{background:rgba(214,64,69,.15);color:var(--white);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;background:var(--red);border-radius:0 2px 2px 0;}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;}
+
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);}
+.sidebar-logout{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);cursor:pointer;transition:color .2s;}
+.sidebar-logout:hover{color:var(--white);}
+
+/* ── MAIN CONTENT ─────────────────────────────────────────────────────────── */
+.main{margin-left:240px;flex:1;min-height:100vh;background:var(--ink);}
+.content-area{padding:32px 40px;}
+
+/* Page header */
+.page-header{margin-bottom:32px;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--white);line-height:1;margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--gray);}
+
+/* Top bar */
+.topbar{
+  background:var(--ink2);border-bottom:1px solid var(--border);
+  padding:0 40px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+.topbar-left{display:flex;align-items:center;gap:8px;}
+.topbar-breadcrumb{font-size:13px;color:var(--gray);}
+.topbar-breadcrumb span{color:var(--white);font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.topbar-notif{
+  width:34px;height:34px;border-radius:var(--r);background:var(--ink3);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;transition:background .2s;
+}
+.topbar-notif:hover{background:var(--ink4);}
+.notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);}
+
+/* Cards */
+.card{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.card-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.card-sub{font-size:12px;color:var(--gray);}
+
+/* Stat cards */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  padding:20px 22px;position:relative;overflow:hidden;
+}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card.red::after{background:var(--red);}
+.stat-card.green::after{background:var(--green);}
+.stat-card.amber::after{background:var(--amber);}
+.stat-card.blue::after{background:var(--blue);}
+.stat-label{font-size:11px;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--white);line-height:1;margin-bottom:4px;}
+.stat-val span{color:var(--red);font-size:22px;}
+.stat-delta{font-size:11px;display:flex;align-items:center;gap:4px;}
+.stat-delta.up{color:var(--green);}
+.stat-delta.down{color:var(--red);}
+
+/* Status pill */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill-green{background:rgba(16,185,129,.15);color:var(--green);}
+.pill-amber{background:rgba(245,158,11,.15);color:var(--amber);}
+.pill-red{background:rgba(214,64,69,.15);color:var(--red);}
+.pill-blue{background:rgba(99,102,241,.15);color:var(--blue);}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+/* Pipeline row */
+.pipeline{display:flex;align-items:center;gap:0;margin-bottom:24px;}
+.pipeline-step{
+  flex:1;text-align:center;padding:14px 8px;
+  background:var(--ink2);border:1px solid var(--border);
+  font-size:11px;color:var(--gray);position:relative;
+  transition:all .2s;
+}
+.pipeline-step:first-child{border-radius:var(--r) 0 0 var(--r);}
+.pipeline-step:last-child{border-radius:0 var(--r) var(--r) 0;}
+.pipeline-step.done{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.25);color:var(--green);}
+.pipeline-step.active{background:rgba(214,64,69,.15);border-color:rgba(214,64,69,.35);color:var(--white);}
+.pipeline-step-icon{font-size:16px;margin-bottom:4px;}
+.pipeline-step-label{font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* Grid 2col */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* Section pages */
+.section-page{display:none;}
+.section-page.active{display:block;}
+
+/* ── DASHBOARD ─────────────────────────────────────────────────────────────── */
+
+/* ── BRIEFING — SUA HISTÓRIA ───────────────────────────────────────────────── */
+.briefing-progress{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  padding:24px;margin-bottom:24px;
+}
+.briefing-prog-bar{height:6px;background:var(--ink3);border-radius:3px;margin:12px 0 6px;}
+.briefing-prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--red),var(--amber));transition:width .5s;}
+.briefing-prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);}
+
+.briefing-blocks{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.briefing-block{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;
+}
+.bb-header{
+  padding:18px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bb-title{font-size:14px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px;}
+.bb-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.bb-field label{font-size:10px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:5px;font-weight:600;}
+.bb-field input,.bb-field textarea,.bb-field select{
+  width:100%;background:var(--ink3);border:1px solid var(--lgray);
+  color:var(--white);padding:10px 14px;font-size:13px;
+  font-family:'Poppins',sans-serif;border-radius:var(--r);outline:none;
+  transition:border-color .2s;resize:none;
+}
+.bb-field input:focus,.bb-field textarea:focus,.bb-field select:focus{border-color:var(--red);}
+.bb-field input::placeholder,.bb-field textarea::placeholder{color:var(--mgray);}
+
+/* Tone cards */
+.tone-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tone-card{
+  background:var(--ink3);border:1px solid var(--lgray);border-radius:var(--r);
+  padding:14px;cursor:pointer;transition:all .2s;text-align:center;
+}
+.tone-card:hover{border-color:var(--red);background:rgba(214,64,69,.08);}
+.tone-card.selected{border-color:var(--red);background:rgba(214,64,69,.12);}
+.tone-card-emoji{font-size:22px;margin-bottom:6px;}
+.tone-card-label{font-size:12px;font-weight:600;color:var(--white);}
+.tone-card-desc{font-size:10px;color:var(--gray);margin-top:3px;}
+
+/* Save btn */
+.btn-save{
+  background:var(--red);color:#fff;border:none;padding:12px 28px;
+  font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  border-radius:var(--r);cursor:pointer;font-family:'Poppins',sans-serif;
+  transition:background .2s;
+}
+.btn-save:hover{background:var(--red2);}
+.btn-outline{
+  background:transparent;color:var(--gray);border:1px solid var(--lgray);
+  padding:12px 28px;font-size:12px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;border-radius:var(--r);cursor:pointer;
+  font-family:'Poppins',sans-serif;transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--white);color:var(--white);}
+
+/* ── CALENDÁRIO ────────────────────────────────────────────────────────────── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.cal-nav{display:flex;align-items:center;gap:12px;}
+.cal-nav-btn{
+  width:34px;height:34px;background:var(--ink2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--gray);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  transition:all .2s;
+}
+.cal-nav-btn:hover{border-color:var(--red);color:var(--white);}
+.cal-month{font-family:'Bebas Neue',sans-serif;font-size:28px;}
+.cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:2px;
+  background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.cal-day-header{
+  background:var(--ink2);padding:10px;text-align:center;
+  font-size:10px;font-weight:600;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase;
+}
+.cal-day{
+  background:var(--ink2);min-height:80px;padding:8px;
+  cursor:pointer;transition:background .2s;position:relative;
+}
+.cal-day:hover{background:var(--ink3);}
+.cal-day.today{background:rgba(214,64,69,.08);}
+.cal-day.other-month{opacity:.35;}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--gray);margin-bottom:6px;}
+.cal-day.today .cal-day-num{color:var(--red);}
+.cal-post-pill{
+  padding:3px 7px;border-radius:4px;font-size:9px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;
+}
+.cal-post-pill.approved{background:rgba(16,185,129,.2);color:var(--green);}
+.cal-post-pill.pending{background:rgba(245,158,11,.2);color:var(--amber);}
+.cal-post-pill.published{background:rgba(99,102,241,.2);color:var(--blue);}
+.cal-post-pill.draft{background:var(--ink3);color:var(--gray);}
+
+/* ── NPS ───────────────────────────────────────────────────────────────────── */
+.nps-collection{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;margin-bottom:20px;
+}
+.nps-collection-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nps-collection-title{font-size:15px;font-weight:700;color:var(--white);}
+.nps-collection-sub{font-size:12px;color:var(--gray);margin-top:2px;}
+.nps-body{padding:24px;}
+
+.nps-question{font-size:16px;font-weight:600;color:var(--white);margin-bottom:20px;line-height:1.5;}
+
+.nps-scale{display:flex;gap:6px;margin-bottom:16px;}
+.nps-btn{
+  flex:1;aspect-ratio:1;border:1px solid var(--lgray);background:var(--ink3);
+  border-radius:var(--r);font-size:13px;font-weight:600;color:var(--gray);
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+}
+.nps-btn:hover{border-color:var(--red);color:var(--white);background:rgba(214,64,69,.1);}
+.nps-btn.selected{border-color:var(--red);background:var(--red);color:#fff;}
+.nps-scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-bottom:20px;}
+
+.nps-comment textarea{
+  width:100%;background:var(--ink3);border:1px solid var(--lgray);
+  color:var(--white);padding:12px 16px;font-size:13px;
+  font-family:'Poppins',sans-serif;border-radius:var(--r);
+  outline:none;resize:none;height:80px;
+}
+.nps-comment textarea:focus{border-color:var(--red);}
+
+.nps-history{margin-top:20px;}
+.nps-history-title{font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.nps-hist-row{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+.nps-hist-score{
+  width:38px;height:38px;border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:16px;flex-shrink:0;
+}
+.nps-hist-score.promoter{background:rgba(16,185,129,.2);color:var(--green);}
+.nps-hist-score.passive{background:rgba(245,158,11,.2);color:var(--amber);}
+.nps-hist-score.detractor{background:rgba(214,64,69,.2);color:var(--red);}
+.nps-hist-info{flex:1;}
+.nps-hist-type{font-size:12px;font-weight:600;color:var(--white);}
+.nps-hist-comment{font-size:11px;color:var(--gray);margin-top:1px;}
+.nps-hist-date{font-size:11px;color:var(--mgray);}
+
+/* ── RELATÓRIO ─────────────────────────────────────────────────────────────── */
+.report-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.kpi{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  padding:18px;text-align:center;
+}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:46px;color:var(--white);line-height:1;}
+.kpi-val.positive{color:var(--green);}
+.kpi-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.kpi-delta{font-size:12px;font-weight:600;margin-top:4px;}
+.kpi-delta.up{color:var(--green);}
+.kpi-delta.down{color:var(--red);}
+
+/* Chart bar */
+.chart-bar-wrap{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.chart-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:20px;}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:100px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .5s;position:relative;}
+.bar-fill.red{background:linear-gradient(to top,var(--red2),var(--red));}
+.bar-fill.dim{background:var(--lgray);}
+.bar-label{font-size:10px;color:var(--gray);text-align:center;}
+
+/* Post list */
+.post-list{display:flex;flex-direction:column;gap:8px;}
+.post-row{
+  display:flex;align-items:center;gap:14px;padding:14px 18px;
+  background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);
+}
+.post-thumb{
+  width:48px;height:48px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.post-info{flex:1;}
+.post-title{font-size:13px;font-weight:600;color:var(--white);}
+.post-meta{font-size:11px;color:var(--gray);margin-top:2px;}
+.post-metrics{display:flex;gap:16px;}
+.post-metric{text-align:center;}
+.post-metric-val{font-size:14px;font-weight:700;color:var(--white);}
+.post-metric-label{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── CONFIGURAÇÕES / MÍDIAS ─────────────────────────────────────────────────── */
+.settings-section{background:var(--ink2);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+.settings-section-header{
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.settings-section-title{font-size:14px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px;}
+.settings-body{padding:24px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-info{flex:1;}
+.settings-row-label{font-size:13px;font-weight:600;color:var(--white);}
+.settings-row-desc{font-size:11px;color:var(--gray);margin-top:2px;}
+
+/* Social connect card */
+.social-card{
+  background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;
+}
+.social-icon{width:42px;height:42px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.social-icon.instagram{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);}
+.social-icon.facebook{background:#1877F2;}
+.social-icon.linkedin{background:#0A66C2;}
+.social-info{flex:1;}
+.social-name{font-size:14px;font-weight:700;color:var(--white);}
+.social-status{font-size:11px;margin-top:3px;}
+.social-status.connected{color:var(--green);}
+.social-status.disconnected{color:var(--gray);}
+.social-cred{margin-top:10px;display:flex;gap:8px;}
+.social-cred input{
+  flex:1;background:var(--ink);border:1px solid var(--lgray);color:var(--white);
+  padding:9px 12px;font-size:12px;font-family:'Poppins',sans-serif;
+  border-radius:var(--r);outline:none;
+}
+.social-cred input:focus{border-color:var(--red);}
+.social-cred button{
+  background:var(--red);color:#fff;border:none;padding:9px 16px;
+  font-size:11px;font-weight:700;border-radius:var(--r);cursor:pointer;
+  font-family:'Poppins',sans-serif;white-space:nowrap;transition:background .2s;
+}
+.social-cred button:hover{background:var(--red2);}
+
+/* Drive link */
+.drive-box{
+  background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);padding:20px;
+}
+.drive-box input{
+  width:100%;background:var(--ink);border:1px solid var(--lgray);color:var(--white);
+  padding:12px 16px;font-size:13px;font-family:'Poppins',sans-serif;
+  border-radius:var(--r);outline:none;margin-bottom:12px;
+}
+.drive-box input:focus{border-color:var(--red);}
+.drive-box-actions{display:flex;gap:10px;}
+
+/* Toggle switch */
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{
+  position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+  background:var(--lgray);border-radius:12px;transition:.3s;
+}
+.toggle-slider::before{
+  content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;
+  background:white;border-radius:50%;transition:.3s;
+}
+.toggle input:checked+.toggle-slider{background:var(--green);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
+
+/* Notifications bell */
+.has-notif{position:relative;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 1 — LOGIN
+════════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-left">
+    <div class="login-left-content">
+      <div class="login-brand">
+        <svg class="login-brand-cluster" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="7.5" fill="white"/>
+          <circle cx="22" cy="9" r="4.8" fill="white"/>
+          <circle cx="22" cy="35" r="4.8" fill="rgba(10,10,10,.6)"/>
+          <circle cx="33" cy="15.5" r="4.8" fill="white"/>
+          <circle cx="11" cy="15.5" r="4.8" fill="white"/>
+          <circle cx="33" cy="28.5" r="4.8" fill="white"/>
+          <circle cx="11" cy="28.5" r="4.8" fill="white"/>
+        </svg>
+        <div class="login-brand-vbar"></div>
+        <div class="login-brand-text">
+          <div class="login-brand-no">NO <div class="login-brand-dot"></div></div>
+          <div class="login-brand-agency">AGENCY</div>
+        </div>
+      </div>
+      <h1 class="login-headline">SEU FEED<br>ATIVO.<br><span>TODO DIA.</span></h1>
+      <p class="login-sub">Bem-vindo à sua plataforma de social media gerenciada por IA. Tudo que você precisa para aparecer — sem agência, sem esforço.</p>
+    </div>
+    <div class="login-bottom">
+      <div class="login-stats">
+        <div>
+          <div class="login-stat-n">30×</div>
+          <div class="login-stat-l">Posts por mês</div>
+        </div>
+        <div>
+          <div class="login-stat-n">15min</div>
+          <div class="login-stat-l">Trabalho seu</div>
+        </div>
+        <div>
+          <div class="login-stat-n">R$0</div>
+          <div class="login-stat-l">Custo extra</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <h2 class="login-form-title">Entrar na plataforma</h2>
+      <p class="login-form-sub">Acesse sua conta No Agency</p>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" type="email" placeholder="seu@email.com" value="fabio@corretora.com.br">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" placeholder="••••••••" value="••••••••">
+      </div>
+      <button class="btn-login" onclick="goToApp()">Acessar minha plataforma →</button>
+      <a href="#" class="login-forgot">Esqueci minha senha</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 2 — APP
+════════════════════════════════════════════════════════════════ -->
+<div id="screen-app" class="screen">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <svg width="28" height="28" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="7" fill="white" opacity=".9"/>
+        <circle cx="22" cy="9" r="4.5" fill="white" opacity=".6"/>
+        <circle cx="22" cy="35" r="4.5" fill="#D64045"/>
+        <circle cx="33" cy="15.5" r="4.5" fill="white" opacity=".6"/>
+        <circle cx="11" cy="15.5" r="4.5" fill="white" opacity=".6"/>
+        <circle cx="33" cy="28.5" r="4.5" fill="white" opacity=".6"/>
+        <circle cx="11" cy="28.5" r="4.5" fill="white" opacity=".6"/>
+      </svg>
+      <div class="sidebar-brand-text">
+        <div class="no">NO <div class="dot"></div></div>
+        <div class="agency">AGENCY</div>
+        <div class="tag">AI-POWERED</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">FM</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Fábio Mendes</div>
+        <div class="sidebar-user-plan">Instagram · Facebook · LinkedIn</div>
+      </div>
+    </div>
+
+    <div class="sidebar-plan-badge">
+      <div class="sidebar-plan-label">Plano ativo</div>
+      <div class="sidebar-plan-name">Crescimento</div>
+      <div class="sidebar-plan-renewal">Renova em 18 Jul 2025</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">Principal</div>
+      <div class="nav-item active" onclick="showSection('dashboard', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1"/><rect x="9" y="0" width="7" height="7" rx="1"/><rect x="0" y="9" width="7" height="7" rx="1"/><rect x="9" y="9" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showSection('briefing', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1C4.13 1 1 4.13 1 8s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z"/><path d="M8 5v4l2.5 2.5"/></svg>
+        Sua História
+        <span class="pill pill-amber" style="margin-left:auto;font-size:9px;padding:2px 6px;">85%</span>
+      </div>
+      <div class="nav-item" onclick="showSection('calendario', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="13" rx="2"/><path d="M1 6h14M5 1v2M11 1v2"/></svg>
+        Calendário Editorial
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" onclick="showSection('nps', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7z"/></svg>
+        Feedback & NPS
+      </div>
+      <div class="sidebar-nav-section">Relatórios</div>
+      <div class="nav-item" onclick="showSection('relatorio', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12l4-4 3 3 4-5 3 2"/><rect x="1" y="1" width="14" height="14" rx="1"/></svg>
+        Relatório Semanal
+      </div>
+      <div class="sidebar-nav-section">Configurações</div>
+      <div class="nav-item" onclick="showSection('midias', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="8" cy="8" r="3"/></svg>
+        Mídias Sociais
+      </div>
+      <div class="nav-item" onclick="showSection('pasta', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V4z"/></svg>
+        Pasta de Mídias
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-logout" onclick="goToLogin()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 14H2a1 1 0 01-1-1V3a1 1 0 011-1h4M11 11l4-3-4-3M15 8H6"/></svg>
+        Sair da conta
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-breadcrumb">No Agency &rsaquo; <span id="breadcrumb-current">Dashboard</span></span>
+      </div>
+      <div class="topbar-right">
+        <div class="pill pill-green"><span class="pill-dot"></span>Feed ativo</div>
+        <div class="topbar-notif has-notif">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 015 5v3l1 2H2l1-2V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
+          <div class="notif-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+
+      <!-- ── DASHBOARD ──────────────────────────────────────────────── -->
+      <div id="section-dashboard" class="section-page active">
+        <div class="page-header">
+          <div class="page-title">Bom dia, Fábio 👋</div>
+          <div class="page-sub">Semana de 08 a 14 de Julho · Plano Crescimento · Instagram + Facebook + LinkedIn</div>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="pipeline">
+          <div class="pipeline-step done"><div class="pipeline-step-icon">✓</div><div class="pipeline-step-label">DNA Brief</div></div>
+          <div class="pipeline-step done"><div class="pipeline-step-icon">✓</div><div class="pipeline-step-label">Mídias</div></div>
+          <div class="pipeline-step done"><div class="pipeline-step-icon">✓</div><div class="pipeline-step-label">Calendário</div></div>
+          <div class="pipeline-step done"><div class="pipeline-step-icon">✓</div><div class="pipeline-step-label">Gerado</div></div>
+          <div class="pipeline-step active"><div class="pipeline-step-icon">⏳</div><div class="pipeline-step-label">Aprovação</div></div>
+          <div class="pipeline-step"><div class="pipeline-step-icon">📲</div><div class="pipeline-step-label">Agendado</div></div>
+          <div class="pipeline-step"><div class="pipeline-step-icon">🚀</div><div class="pipeline-step-label">Publicado</div></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card red">
+            <div class="stat-label">Posts este mês</div>
+            <div class="stat-val">18<span>/20</span></div>
+            <div class="stat-delta up">↑ 2 publicados hoje</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Seguidores</div>
+            <div class="stat-val">1.847</div>
+            <div class="stat-delta up">↑ +234 este mês</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Aguardando aprovação</div>
+            <div class="stat-val">3</div>
+            <div class="stat-delta">Prazo: 5 dias</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">NPS do mês</div>
+            <div class="stat-val">9<span>/10</span></div>
+            <div class="stat-delta up">↑ Promotor</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Posts para aprovar -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M5 8l2 2 4-4"/></svg>
+              Posts para aprovar
+              <span class="pill pill-amber" style="margin-left:auto;">3 pendentes</span>
+            </div>
+            <div class="card-sub" style="margin-bottom:16px;">Prazo: 12 de Julho · Auto-aprovação em 5 dias</div>
+            <div class="post-list">
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(214,64,69,.15);">🏠</div>
+                <div class="post-info">
+                  <div class="post-title">O imóvel você divulga. Sua marca, quem divulga?</div>
+                  <div class="post-meta">Feed · Instagram + Facebook + LinkedIn · 10 Jul</div>
+                </div>
+                <span class="pill pill-amber"><span class="pill-dot"></span>Pendente</span>
+              </div>
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(99,102,241,.15);">📊</div>
+                <div class="post-info">
+                  <div class="post-title">Confiança se constrói antes da primeira reunião.</div>
+                  <div class="post-meta">Feed · Instagram + LinkedIn · 12 Jul</div>
+                </div>
+                <span class="pill pill-amber"><span class="pill-dot"></span>Pendente</span>
+              </div>
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(16,185,129,.15);">💼</div>
+                <div class="post-info">
+                  <div class="post-title">Cliente compra do corretor que aparece. Todo dia.</div>
+                  <div class="post-meta">Stories · Instagram · 14 Jul</div>
+                </div>
+                <span class="pill pill-amber"><span class="pill-dot"></span>Pendente</span>
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <button class="btn-save" style="width:100%;" onclick="showSection('calendario',document.querySelector('[onclick*=calendario]'))">Ver e aprovar posts →</button>
+            </div>
+          </div>
+
+          <!-- Próximos posts -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="13" rx="2"/><path d="M1 6h14M5 1v2M11 1v2"/></svg>
+              Próximos posts agendados
+            </div>
+            <div class="card-sub" style="margin-bottom:16px;">Semana de 15–21 de Julho</div>
+            <div class="post-list">
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(16,185,129,.15);">✅</div>
+                <div class="post-info">
+                  <div class="post-title">Por que a concorrência cresce e você não?</div>
+                  <div class="post-meta">Feed · 15 Jul · 18:00 · IG + LI</div>
+                </div>
+                <span class="pill pill-green"><span class="pill-dot"></span>Aprovado</span>
+              </div>
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(16,185,129,.15);">✅</div>
+                <div class="post-info">
+                  <div class="post-title">O que o algoritmo realmente quer.</div>
+                  <div class="post-meta">Stories · 17 Jul · 12:00</div>
+                </div>
+                <span class="pill pill-green"><span class="pill-dot"></span>Aprovado</span>
+              </div>
+              <div class="post-row">
+                <div class="post-thumb" style="background:rgba(99,102,241,.15);">🔵</div>
+                <div class="post-info">
+                  <div class="post-title">Corretor invisível online perde 3 clientes/mês.</div>
+                  <div class="post-meta">Feed · 19 Jul · 09:00 · IG + FB + LI</div>
+                </div>
+                <span class="pill pill-blue"><span class="pill-dot"></span>Agendado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUA HISTÓRIA (BRIEFING) ──────────────────────────────── -->
+      <div id="section-briefing" class="section-page">
+        <div class="page-header">
+          <div class="page-title">Sua História</div>
+          <div class="page-sub">Seu DNA Brief — a IA usa essas informações para criar todo o seu conteúdo. Mantenha sempre atualizado.</div>
+        </div>
+
+        <div class="briefing-progress">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--white);">Completude do DNA Brief</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">Quanto mais completo, melhor o conteúdo gerado</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--red);">85%</div>
+          </div>
+          <div class="briefing-prog-bar"><div class="briefing-prog-fill" style="width:85%;"></div></div>
+          <div class="briefing-prog-labels"><span>Iniciante</span><span>Completo</span><span>Excelente</span></div>
+        </div>
+
+        <div class="briefing-blocks">
+          <!-- Bloco 1 -->
+          <div class="briefing-block">
+            <div class="bb-header">
+              <div class="bb-title">🏢 Seu negócio</div>
+              <span class="pill pill-green"><span class="pill-dot"></span>Completo</span>
+            </div>
+            <div class="bb-body">
+              <div class="bb-field"><label>Nome do negócio</label><input type="text" value="Fábio Mendes Imóveis"></div>
+              <div class="bb-field"><label>Segmento</label><input type="text" value="Corretor de imóveis · Mercado residencial"></div>
+              <div class="bb-field"><label>Cidade e região</label><input type="text" value="Barueri · SP · Grande SP"></div>
+              <div class="bb-field"><label>Anos no mercado</label><input type="text" value="8 anos"></div>
+              <div class="bb-field"><label>Seus principais diferenciais</label><textarea rows="3" placeholder="O que só você oferece...">Especialista em apartamentos na faixa de R$350k–800k. Atendo famílias que buscam mudar para condomínios fechados na região de Barueri e Alphaville.</textarea></div>
+            </div>
+          </div>
+
+          <!-- Bloco 2 -->
+          <div class="briefing-block">
+            <div class="bb-header">
+              <div class="bb-title">🎯 Seu cliente ideal</div>
+              <span class="pill pill-green"><span class="pill-dot"></span>Completo</span>
+            </div>
+            <div class="bb-body">
+              <div class="bb-field"><label>Perfil do cliente</label><textarea rows="3">Casal entre 30–45 anos, renda familiar acima de R$10k, buscando primeiro imóvel próprio ou upgrade para condomínio fechado.</textarea></div>
+              <div class="bb-field"><label>Principal dor do cliente</label><textarea rows="3">Medo de comprar errado, desconfiança de corretores, dificuldade de achar imóvel no perfil correto sem perder tempo.</textarea></div>
+              <div class="bb-field"><label>Como o cliente te encontra hoje</label><input type="text" value="Indicação, grupos de WhatsApp, OLX, Instagram, LinkedIn"></div>
+            </div>
+          </div>
+
+          <!-- Bloco 3 — Tom de voz -->
+          <div class="briefing-block" style="grid-column:1/-1;">
+            <div class="bb-header">
+              <div class="bb-title">🎙️ Tom de voz da marca</div>
+              <span class="pill pill-green"><span class="pill-dot"></span>Definido</span>
+            </div>
+            <div class="bb-body">
+              <div style="font-size:12px;color:var(--gray);margin-bottom:14px;">Selecione o estilo de comunicação que melhor representa você:</div>
+              <div class="tone-cards">
+                <div class="tone-card selected">
+                  <div class="tone-card-emoji">🤝</div>
+                  <div class="tone-card-label">Próximo e direto</div>
+                  <div class="tone-card-desc">Fala como amigo de confiança. Sem jargão técnico.</div>
+                </div>
+                <div class="tone-card">
+                  <div class="tone-card-emoji">💼</div>
+                  <div class="tone-card-label">Profissional e técnico</div>
+                  <div class="tone-card-desc">Autoridade e expertise em primeiro lugar.</div>
+                </div>
+                <div class="tone-card">
+                  <div class="tone-card-emoji">🎉</div>
+                  <div class="tone-card-label">Animado e inspirador</div>
+                  <div class="tone-card-desc">Energia alta, muito engajamento, emojis.</div>
+                </div>
+              </div>
+              <div class="bb-field" style="margin-top:16px;"><label>Palavras que você NUNCA usaria</label><input type="text" value="Oportunidade imperdível, Corre, Vai acabar, Sonho de consumo"></div>
+              <div class="bb-field"><label>Palavras que você adora usar</label><input type="text" placeholder="Ex: tranquilidade, confiança, família, lar..."></div>
+            </div>
+          </div>
+
+          <!-- Bloco 4 -->
+          <div class="briefing-block">
+            <div class="bb-header">
+              <div class="bb-title">📅 Operacional</div>
+              <span class="pill pill-amber"><span class="pill-dot"></span>Incompleto</span>
+            </div>
+            <div class="bb-body">
+              <div class="bb-field"><label>Datas sazonais importantes</label><textarea rows="3" placeholder="Ex: Black Friday, dia do corretor, lançamentos específicos...">Dia do corretor (27/ago), época de lançamentos (mar–abr e set–out)</textarea></div>
+              <div class="bb-field"><label>Concorrentes diretos (nomes ou perfis)</label><input type="text" placeholder="@concorrente1, @concorrente2..."></div>
+              <div class="bb-field"><label>Horários de pico do seu público</label><input type="text" value="Manhãs (7h–9h) e noites (20h–22h)"></div>
+            </div>
+          </div>
+
+          <!-- Bloco 5 -->
+          <div class="briefing-block">
+            <div class="bb-header">
+              <div class="bb-title">📸 Estilo visual</div>
+              <span class="pill pill-amber"><span class="pill-dot"></span>Incompleto</span>
+            </div>
+            <div class="bb-body">
+              <div class="bb-field"><label>Cores da sua marca</label><input type="text" placeholder="Ex: azul marinho, dourado, branco..."></div>
+              <div class="bb-field"><label>Referências visuais (perfis que admira)</label><input type="text" placeholder="@perfil1, @perfil2..."></div>
+              <div class="bb-field"><label>O que NÃO combina com sua marca visualmente</label><textarea rows="3" placeholder="Ex: cores muito vibrantes, humor exagerado, fotos genéricas de banco de imagens..."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button class="btn-outline">Descartar alterações</button>
+          <button class="btn-save">Salvar DNA Brief →</button>
+        </div>
+      </div>
+
+      <!-- ── CALENDÁRIO EDITORIAL ──────────────────────────────────── -->
+      <div id="section-calendario" class="section-page">
+        <div class="cal-header">
+          <div>
+            <div class="page-title">Calendário Editorial</div>
+            <div class="page-sub">Julho 2025 · 20 posts planejados · 3 aguardando aprovação</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="display:flex;gap:8px;font-size:11px;align-items:center;">
+              <span class="pill pill-green"><span class="pill-dot"></span>Aprovado</span>
+              <span class="pill pill-amber"><span class="pill-dot"></span>Pendente</span>
+              <span class="pill pill-blue"><span class="pill-dot"></span>Agendado</span>
+              <span style="background:var(--ink3);color:var(--gray);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;">Rascunho</span>
+              <span style="background:rgba(10,102,194,.15);color:#4da6ff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;">in LinkedIn</span>
+            </div>
+            <div class="cal-nav">
+              <button class="cal-nav-btn">‹</button>
+              <span class="cal-month">Julho 2025</span>
+              <button class="cal-nav-btn">›</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cal-grid">
+          <!-- Headers -->
+          <div class="cal-day-header">DOM</div>
+          <div class="cal-day-header">SEG</div>
+          <div class="cal-day-header">TER</div>
+          <div class="cal-day-header">QUA</div>
+          <div class="cal-day-header">QUI</div>
+          <div class="cal-day-header">SEX</div>
+          <div class="cal-day-header">SÁB</div>
+          <!-- Row 1 -->
+          <div class="cal-day other-month"><div class="cal-day-num">29</div></div>
+          <div class="cal-day other-month"><div class="cal-day-num">30</div></div>
+          <div class="cal-day"><div class="cal-day-num">1</div><div class="cal-post-pill published">📲 Publicado</div></div>
+          <div class="cal-day"><div class="cal-day-num">2</div><div class="cal-post-pill published">📲 Publicado</div></div>
+          <div class="cal-day"><div class="cal-day-num">3</div><div class="cal-post-pill approved">✓ Aprovado</div></div>
+          <div class="cal-day"><div class="cal-day-num">4</div><div class="cal-post-pill approved">✓ Aprovado</div></div>
+          <div class="cal-day"><div class="cal-day-num">5</div></div>
+          <!-- Row 2 -->
+          <div class="cal-day"><div class="cal-day-num">6</div></div>
+          <div class="cal-day"><div class="cal-day-num">7</div><div class="cal-post-pill approved">✓ Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">8</div><div class="cal-post-pill approved">✓ Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">9</div><div class="cal-post-pill published">📲 Publicado</div></div>
+          <div class="cal-day"><div class="cal-day-num">10</div><div class="cal-post-pill pending">⏳ Aprovar</div></div>
+          <div class="cal-day"><div class="cal-day-num">11</div><div class="cal-post-pill approved">✓ Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">12</div></div>
+          <!-- Row 3 — today -->
+          <div class="cal-day"><div class="cal-day-num">13</div></div>
+          <div class="cal-day today"><div class="cal-day-num">14 ·hoje</div><div class="cal-post-pill pending">⏳ Aprovar</div></div>
+          <div class="cal-day"><div class="cal-day-num">15</div><div class="cal-post-pill approved">✓ Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">16</div><div class="cal-post-pill draft">📝 Rascunho</div></div>
+          <div class="cal-day"><div class="cal-day-num">17</div><div class="cal-post-pill draft">📝 Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">18</div><div class="cal-post-pill draft">📝 Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">19</div></div>
+          <!-- Row 4 -->
+          <div class="cal-day"><div class="cal-day-num">20</div></div>
+          <div class="cal-day"><div class="cal-day-num">21</div><div class="cal-post-pill draft">📝 Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">22</div><div class="cal-post-pill draft">📝 Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">23</div><div class="cal-post-pill pending">⏳ Aprovar</div></div>
+          <div class="cal-day"><div class="cal-day-num">24</div><div class="cal-post-pill draft">📝 Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">25</div><div class="cal-post-pill draft">📝 Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">26</div></div>
+          <!-- Row 5 -->
+          <div class="cal-day"><div class="cal-day-num">27</div></div>
+          <div class="cal-day"><div class="cal-day-num">28</div><div class="cal-post-pill draft">📝 Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">29</div><div class="cal-post-pill draft">📝 Stories</div></div>
+          <div class="cal-day"><div class="cal-day-num">30</div><div class="cal-post-pill draft">📝 Feed</div></div>
+          <div class="cal-day"><div class="cal-day-num">31</div></div>
+          <div class="cal-day other-month"><div class="cal-day-num">1</div></div>
+          <div class="cal-day other-month"><div class="cal-day-num">2</div></div>
+        </div>
+
+        <div style="margin-top:16px;padding:16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--amber);">⏳ 3 posts aguardando sua aprovação</div>
+            <div style="font-size:12px;color:var(--gray);margin-top:2px;">Prazo: 19 de Julho · Auto-aprovação se não responder em 7 dias</div>
+          </div>
+          <button class="btn-save">Aprovar todos →</button>
+        </div>
+      </div>
+
+      <!-- ── NPS ──────────────────────────────────────────────────── -->
+      <div id="section-nps" class="section-page">
+        <div class="page-header">
+          <div class="page-title">Feedback & NPS</div>
+          <div class="page-sub">Seu feedback melhora o conteúdo gerado. Cada resposta atualiza o DNA Brief automaticamente.</div>
+        </div>
+
+        <!-- NPS 1 ativo -->
+        <div class="nps-collection">
+          <div class="nps-collection-header">
+            <div>
+              <div class="nps-collection-title">⭐ Coleta 1 — Como foi seu onboarding?</div>
+              <div class="nps-collection-sub">Enviado após finalizar o DNA Brief · Avaliar a experiência inicial</div>
+            </div>
+            <span class="pill pill-amber"><span class="pill-dot"></span>Aguardando resposta</span>
+          </div>
+          <div class="nps-body">
+            <div class="nps-question">De 0 a 10, quanto foi fácil configurar sua conta e completar o DNA Brief?</div>
+            <div class="nps-scale" id="nps1-scale">
+              <div class="nps-btn" onclick="selectNps('nps1',this,0)">0</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,1)">1</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,2)">2</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,3)">3</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,4)">4</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,5)">5</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,6)">6</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,7)">7</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,8)">8</div>
+              <div class="nps-btn selected" onclick="selectNps('nps1',this,9)">9</div>
+              <div class="nps-btn" onclick="selectNps('nps1',this,10)">10</div>
+            </div>
+            <div class="nps-scale-labels"><span>Péssimo</span><span>Excelente</span></div>
+            <div class="nps-comment">
+              <label style="font-size:11px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;font-weight:600;display:block;margin-bottom:8px;">O que podemos melhorar? (opcional)</label>
+              <textarea placeholder="Sua opinião melhora o produto para você e para outros clientes...">Foi muito rápido e intuitivo. O chat guiado ajudou bastante.</textarea>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn-save">Enviar avaliação →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NPS 2 -->
+        <div class="nps-collection">
+          <div class="nps-collection-header">
+            <div>
+              <div class="nps-collection-title">⭐ Coleta 2 — O conteúdo representa seu negócio?</div>
+              <div class="nps-collection-sub">Ativado ao finalizar a aprovação semanal · Avalia qualidade do conteúdo gerado</div>
+            </div>
+            <span class="pill pill-blue"><span class="pill-dot"></span>Próxima coleta</span>
+          </div>
+          <div class="nps-body" style="opacity:.5;pointer-events:none;">
+            <div class="nps-question">De 0 a 10, o conteúdo da semana representou bem a voz do seu negócio?</div>
+            <div class="nps-scale">
+              <div class="nps-btn">0</div><div class="nps-btn">1</div><div class="nps-btn">2</div><div class="nps-btn">3</div>
+              <div class="nps-btn">4</div><div class="nps-btn">5</div><div class="nps-btn">6</div><div class="nps-btn">7</div>
+              <div class="nps-btn">8</div><div class="nps-btn">9</div><div class="nps-btn">10</div>
+            </div>
+            <div class="nps-scale-labels"><span>Péssimo</span><span>Excelente</span></div>
+            <div style="text-align:center;padding:16px;font-size:13px;color:var(--gray);">Disponível após próxima aprovação</div>
+          </div>
+        </div>
+
+        <!-- NPS 3 -->
+        <div class="nps-collection">
+          <div class="nps-collection-header">
+            <div>
+              <div class="nps-collection-title">⭐ Coleta 3 — Avaliação geral do mês</div>
+              <div class="nps-collection-sub">Todo dia 1º do mês · Junto ao relatório mensal consolidado</div>
+            </div>
+            <span class="pill pill-blue"><span class="pill-dot"></span>Dia 01/Ago</span>
+          </div>
+          <div class="nps-body" style="opacity:.5;pointer-events:none;">
+            <div class="nps-question">De 0 a 10, qual sua satisfação geral com a No Agency este mês?</div>
+            <div class="nps-scale">
+              <div class="nps-btn">0</div><div class="nps-btn">1</div><div class="nps-btn">2</div><div class="nps-btn">3</div>
+              <div class="nps-btn">4</div><div class="nps-btn">5</div><div class="nps-btn">6</div><div class="nps-btn">7</div>
+              <div class="nps-btn">8</div><div class="nps-btn">9</div><div class="nps-btn">10</div>
+            </div>
+            <div style="text-align:center;padding:16px;font-size:13px;color:var(--gray);">Disponível em 01 de Agosto</div>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card">
+          <div class="card-title">Histórico de avaliações</div>
+          <div class="nps-history">
+            <div class="nps-hist-row">
+              <div class="nps-hist-score promoter">9</div>
+              <div class="nps-hist-info">
+                <div class="nps-hist-type">Coleta 1 · Onboarding</div>
+                <div class="nps-hist-comment">"Foi muito rápido e intuitivo. O chat guiado ajudou bastante."</div>
+              </div>
+              <div class="nps-hist-date">08 Jun</div>
+            </div>
+            <div class="nps-hist-row">
+              <div class="nps-hist-score promoter">10</div>
+              <div class="nps-hist-info">
+                <div class="nps-hist-type">Coleta 2 · Conteúdo (semana 1)</div>
+                <div class="nps-hist-comment">"Os posts ficaram exatamente no meu tom. Clientes reconheceram minha voz."</div>
+              </div>
+              <div class="nps-hist-date">15 Jun</div>
+            </div>
+            <div class="nps-hist-row">
+              <div class="nps-hist-score passive">8</div>
+              <div class="nps-hist-info">
+                <div class="nps-hist-type">Coleta 2 · Conteúdo (semana 2)</div>
+                <div class="nps-hist-comment">"Bom, mas poderia ter mais foco em condomínios fechados."</div>
+              </div>
+              <div class="nps-hist-date">22 Jun</div>
+            </div>
+            <div class="nps-hist-row">
+              <div class="nps-hist-score promoter">9</div>
+              <div class="nps-hist-info">
+                <div class="nps-hist-type">Coleta 3 · Avaliação mensal · Junho</div>
+                <div class="nps-hist-comment">"Melhor investimento em marketing que já fiz. Simples e funciona."</div>
+              </div>
+              <div class="nps-hist-date">01 Jul</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RELATÓRIO SEMANAL ──────────────────────────────────────── -->
+      <div id="section-relatorio" class="section-page">
+        <div class="page-header">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div class="page-title">Relatório Semanal</div>
+              <div class="page-sub">Semana de 01 a 07 de Julho 2025 · Instagram + Facebook + LinkedIn</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-outline" style="padding:10px 18px;font-size:11px;">⬇ Exportar PDF</button>
+              <div style="background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--gray);">
+                Semana anterior ‹ &nbsp; › Semana atual
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="report-kpis">
+          <div class="kpi">
+            <div class="kpi-val">8</div>
+            <div class="kpi-label">Posts publicados</div>
+            <div class="kpi-delta up">↑ +2 vs semana anterior</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val positive">+127</div>
+            <div class="kpi-label">Novos seguidores</div>
+            <div class="kpi-delta up">↑ +38% vs anterior</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val">4.8%</div>
+            <div class="kpi-label">Taxa de engajamento</div>
+            <div class="kpi-delta up">↑ acima da média</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val">14.2k</div>
+            <div class="kpi-label">Alcance total</div>
+            <div class="kpi-delta up">↑ +22% vs anterior</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:16px;">
+          <!-- Engajamento por dia -->
+          <div class="chart-bar-wrap">
+            <div class="chart-title">Alcance por dia</div>
+            <div class="chart-bars">
+              <div class="bar-col"><div class="bar-fill dim" style="height:40px;"></div><div class="bar-label">SEG</div></div>
+              <div class="bar-col"><div class="bar-fill red" style="height:75px;"></div><div class="bar-label">TER</div></div>
+              <div class="bar-col"><div class="bar-fill dim" style="height:35px;"></div><div class="bar-label">QUA</div></div>
+              <div class="bar-col"><div class="bar-fill red" style="height:90px;"></div><div class="bar-label">QUI</div></div>
+              <div class="bar-col"><div class="bar-fill red" style="height:100px;"></div><div class="bar-label">SEX</div></div>
+              <div class="bar-col"><div class="bar-fill dim" style="height:55px;"></div><div class="bar-label">SÁB</div></div>
+              <div class="bar-col"><div class="bar-fill dim" style="height:25px;"></div><div class="bar-label">DOM</div></div>
+            </div>
+          </div>
+
+          <!-- Post destaque -->
+          <div class="card">
+            <div class="card-title">🏆 Post destaque da semana</div>
+            <div class="card-sub" style="margin-bottom:16px;">Melhor desempenho por engajamento</div>
+            <div style="background:rgba(214,64,69,.08);border:1px solid rgba(214,64,69,.2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:6px;">"O imóvel você divulga. Sua marca, quem divulga?"</div>
+              <div style="font-size:11px;color:var(--gray);">Feed · Instagram · Quinta, 03 Jul</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+              <div style="background:var(--ink3);border-radius:var(--r);padding:10px;">
+                <div style="font-size:18px;font-weight:700;color:var(--white);">3.240</div>
+                <div style="font-size:10px;color:var(--gray);text-transform:uppercase;">Alcance</div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:10px;">
+                <div style="font-size:18px;font-weight:700;color:var(--green);">8.2%</div>
+                <div style="font-size:10px;color:var(--gray);text-transform:uppercase;">Engaj.</div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:10px;">
+                <div style="font-size:18px;font-weight:700;color:var(--amber);">47</div>
+                <div style="font-size:10px;color:var(--gray);text-transform:uppercase;">Saves</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding:10px;background:rgba(99,102,241,.08);border-radius:var(--r);font-size:11px;color:var(--blue);">
+              💡 Quer mais conteúdo nesse formato? Responda "sim" no próximo relatório e a IA prioriza esse estilo.
+            </div>
+          </div>
+        </div>
+
+        <!-- Todos os posts da semana -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px;">Todos os posts da semana</div>
+          <div class="post-list">
+            <div class="post-row">
+              <div class="post-thumb" style="background:rgba(214,64,69,.15);">🏠</div>
+              <div class="post-info"><div class="post-title">O imóvel você divulga. Sua marca, quem divulga?</div><div class="post-meta">Feed · Qui 03 Jul · Instagram + Facebook + LinkedIn</div></div>
+              <div class="post-metrics">
+                <div class="post-metric"><div class="post-metric-val">3.2k</div><div class="post-metric-label">Alcance</div></div>
+                <div class="post-metric"><div class="post-metric-val">8.2%</div><div class="post-metric-label">Engaj.</div></div>
+              </div>
+            </div>
+            <div class="post-row">
+              <div class="post-thumb" style="background:rgba(16,185,129,.15);">🤝</div>
+              <div class="post-info"><div class="post-title">Confiança se constrói antes da primeira reunião.</div><div class="post-meta">Stories · Ter 01 Jul · Instagram</div></div>
+              <div class="post-metrics">
+                <div class="post-metric"><div class="post-metric-val">1.8k</div><div class="post-metric-label">Alcance</div></div>
+                <div class="post-metric"><div class="post-metric-val">5.1%</div><div class="post-metric-label">Engaj.</div></div>
+              </div>
+            </div>
+            <div class="post-row">
+              <div class="post-thumb" style="background:rgba(99,102,241,.15);">📊</div>
+              <div class="post-info"><div class="post-title">Por que a concorrência cresce no Instagram e você não?</div><div class="post-meta">Feed · Sex 06 Jul · Instagram + Facebook + LinkedIn</div></div>
+              <div class="post-metrics">
+                <div class="post-metric"><div class="post-metric-val">2.4k</div><div class="post-metric-label">Alcance</div></div>
+                <div class="post-metric"><div class="post-metric-val">6.7%</div><div class="post-metric-label">Engaj.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MÍDIAS SOCIAIS ─────────────────────────────────────────── -->
+      <div id="section-midias" class="section-page">
+        <div class="page-header">
+          <div class="page-title">Mídias Sociais</div>
+          <div class="page-sub">Conecte suas contas para publicação automática. Suas credenciais são criptografadas e nunca compartilhadas.</div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">📱 Contas conectadas</div>
+            <span class="pill pill-green"><span class="pill-dot"></span>3 contas ativas</span>
+          </div>
+          <div class="settings-body">
+            <!-- Instagram -->
+            <div class="social-card">
+              <div class="social-icon instagram">📷</div>
+              <div class="social-info" style="flex:1;">
+                <div class="social-name">Instagram</div>
+                <div class="social-status connected">✓ Conectado como @fabio.mendes.imoveis</div>
+                <div style="font-size:11px;color:var(--gray);margin-top:2px;">Token expira em 45 dias · Último post: 07 Jul 2025</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-outline" style="padding:8px 14px;font-size:11px;">Reconectar</button>
+                <button style="background:rgba(214,64,69,.15);color:var(--red);border:1px solid rgba(214,64,69,.3);padding:8px 14px;font-size:11px;border-radius:var(--r);cursor:pointer;font-family:'Poppins',sans-serif;">Desconectar</button>
+              </div>
+            </div>
+
+            <!-- Facebook -->
+            <div class="social-card">
+              <div class="social-icon facebook">f</div>
+              <div class="social-info" style="flex:1;">
+                <div class="social-name">Facebook Page</div>
+                <div class="social-status connected">✓ Conectado como Fábio Mendes Imóveis</div>
+                <div style="font-size:11px;color:var(--gray);margin-top:2px;">Token expira em 45 dias · Último post: 07 Jul 2025</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-outline" style="padding:8px 14px;font-size:11px;">Reconectar</button>
+                <button style="background:rgba(214,64,69,.15);color:var(--red);border:1px solid rgba(214,64,69,.3);padding:8px 14px;font-size:11px;border-radius:var(--r);cursor:pointer;font-family:'Poppins',sans-serif;">Desconectar</button>
+              </div>
+            </div>
+
+            <!-- LinkedIn -->
+            <div class="social-card">
+              <div class="social-icon linkedin" style="font-size:18px;font-weight:700;color:#fff;">in</div>
+              <div class="social-info" style="flex:1;">
+                <div class="social-name">LinkedIn</div>
+                <div class="social-status connected">✓ Conectado como Fábio Mendes</div>
+                <div style="font-size:11px;color:var(--gray);margin-top:2px;">Token expira em 45 dias · Último post: 07 Jul 2025</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-outline" style="padding:8px 14px;font-size:11px;">Reconectar</button>
+                <button style="background:rgba(214,64,69,.15);color:var(--red);border:1px solid rgba(214,64,69,.3);padding:8px 14px;font-size:11px;border-radius:var(--r);cursor:pointer;font-family:'Poppins',sans-serif;">Desconectar</button>
+              </div>
+            </div>
+
+            <!-- Google Meu Negócio (plano Presença Total) -->
+            <div class="social-card" style="opacity:.5;">
+              <div class="social-icon" style="background:var(--ink);font-size:22px;">🗺️</div>
+              <div class="social-info" style="flex:1;">
+                <div class="social-name">Google Meu Negócio</div>
+                <div class="social-status disconnected">Disponível no plano Presença Total</div>
+              </div>
+              <span class="pill pill-amber">Upgrade</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credenciais manuais -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">🔐 Credenciais de acesso (opcional)</div>
+          </div>
+          <div class="settings-body">
+            <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:14px;margin-bottom:20px;">
+              <div style="font-size:12px;color:var(--amber);font-weight:600;">ℹ️ Por que informar credenciais?</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:4px;">Em alguns casos, a reconexão via Meta API pode ser necessária. Armazenar as credenciais facilita esse processo. Todos os dados são criptografados com AES-256.</div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px;">📷 Instagram</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="bb-field"><label>Usuário / @handle</label><input type="text" placeholder="@seuperfil" value="@fabio.mendes.imoveis"></div>
+                <div class="bb-field"><label>Senha da conta</label><input type="password" placeholder="••••••••" value="••••••••••••"></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px;">f Facebook</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="bb-field"><label>E-mail da conta</label><input type="email" placeholder="seu@email.com" value="fabio@email.com"></div>
+                <div class="bb-field"><label>Senha da conta</label><input type="password" placeholder="••••••••" value="••••••••••••"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="background:#0A66C2;color:#fff;padding:1px 6px;border-radius:3px;font-size:12px;">in</span> LinkedIn</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="bb-field"><label>E-mail da conta</label><input type="email" placeholder="seu@email.com" value="fabio@email.com"></div>
+                <div class="bb-field"><label>Senha da conta</label><input type="password" placeholder="••••••••" value="••••••••••••"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end;">
+              <button class="btn-outline">Cancelar</button>
+              <button class="btn-save">Salvar credenciais →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferências de publicação -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">⚙️ Preferências de publicação</div>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">Publicação automática ativa</div>
+                <div class="settings-row-desc">A IA publica nos horários otimizados sem precisar de confirmação adicional</div>
+              </div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">Notificação ao publicar</div>
+                <div class="settings-row-desc">Receber e-mail quando cada post for publicado com sucesso</div>
+              </div>
+              <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">Auto-aprovação após 7 dias</div>
+                <div class="settings-row-desc">Se não aprovar em 7 dias, os posts são publicados automaticamente</div>
+              </div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PASTA DE MÍDIAS ────────────────────────────────────────── -->
+      <div id="section-pasta" class="section-page">
+        <div class="page-header">
+          <div class="page-title">Pasta de Mídias</div>
+          <div class="page-sub">Envie suas fotos e vídeos para que a IA use nas artes. Quanto mais fotos reais, melhor o resultado.</div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">🔗 Link da pasta compartilhada (Google Drive)</div>
+            <span class="pill pill-green"><span class="pill-dot"></span>Pasta conectada</span>
+          </div>
+          <div class="settings-body">
+            <div style="font-size:12px;color:var(--gray);margin-bottom:16px;">Sua pasta exclusiva foi criada automaticamente. Você pode acessar por aqui ou compartilhar com sua equipe para adicionar fotos diretamente.</div>
+            <div class="drive-box">
+              <label style="font-size:10px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;font-weight:600;display:block;margin-bottom:8px;">Link da sua pasta no Google Drive</label>
+              <input type="url" value="https://drive.google.com/drive/folders/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74ogDAFpFA">
+              <div class="drive-box-actions">
+                <button class="btn-save">Abrir pasta →</button>
+                <button class="btn-outline">Copiar link</button>
+                <button class="btn-outline">Atualizar link</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completude de mídias -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">📊 Completude da pasta</div>
+          </div>
+          <div class="settings-body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">📸 Fotos do ambiente</div>
+                <div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px;">12 fotos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:80%;background:var(--green);border-radius:2px;"></div></div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🏢 Fotos dos imóveis</div>
+                <div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px;">28 fotos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:95%;background:var(--green);border-radius:2px;"></div></div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">👤 Foto sua (perfil)</div>
+                <div style="font-size:22px;font-weight:700;color:var(--amber);margin-bottom:4px;">3 fotos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:30%;background:var(--amber);border-radius:2px;"></div></div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🏷️ Logos e identidade</div>
+                <div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px;">2 arquivos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:100%;background:var(--green);border-radius:2px;"></div></div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🎥 Vídeos curtos</div>
+                <div style="font-size:22px;font-weight:700;color:var(--red);margin-bottom:4px;">0 vídeos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:0%;background:var(--red);border-radius:2px;"></div></div>
+              </div>
+              <div style="background:var(--ink3);border-radius:var(--r);padding:16px;">
+                <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">📁 Outros</div>
+                <div style="font-size:22px;font-weight:700;color:var(--gray);margin-bottom:4px;">5 arquivos</div>
+                <div style="height:4px;background:var(--ink);border-radius:2px;"><div style="height:100%;width:50%;background:var(--gray);border-radius:2px;"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding:14px;background:rgba(214,64,69,.08);border:1px solid rgba(214,64,69,.2);border-radius:var(--r);">
+              <div style="font-size:12px;color:var(--red);font-weight:600;">⚠ Adicione fotos suas (profissional ou boa qualidade)</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:4px;">Posts com foto do corretor têm em média 3× mais engajamento. Recomendamos ao menos 5 fotos profissionais suas.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload direto -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title">⬆️ Upload direto pela plataforma</div>
+          </div>
+          <div class="settings-body">
+            <div style="border:2px dashed var(--lgray);border-radius:var(--r);padding:40px;text-align:center;transition:border-color .2s;cursor:pointer;" onmouseenter="this.style.borderColor='var(--red)'" onmouseleave="this.style.borderColor='var(--lgray)'">
+              <div style="font-size:32px;margin-bottom:12px;">📎</div>
+              <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px;">Arraste arquivos aqui ou clique para selecionar</div>
+              <div style="font-size:12px;color:var(--gray);">JPG, PNG, MP4 · Máximo 50MB por arquivo · Vai direto para a pasta certa</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- content-area -->
+  </div><!-- main -->
+</div><!-- screen-app -->
+
+<script>
+function goToApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display = 'flex';
+  document.getElementById('screen-app').classList.add('active');
+}
+
+function goToLogin() {
+  document.getElementById('screen-app').style.display = 'none';
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-login').classList.add('active');
+}
+
+function showSection(id, navEl) {
+  // Hide all sections
+  document.querySelectorAll('.section-page').forEach(s => s.classList.remove('active'));
+  // Show target
+  document.getElementById('section-' + id).classList.add('active');
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  // Update breadcrumb
+  const labels = {
+    dashboard: 'Dashboard', briefing: 'Sua História',
+    calendario: 'Calendário Editorial', nps: 'Feedback & NPS',
+    relatorio: 'Relatório Semanal', midias: 'Mídias Sociais', pasta: 'Pasta de Mídias'
+  };
+  document.getElementById('breadcrumb-current').textContent = labels[id] || id;
+}
+
+function selectNps(group, btn, val) {
+  document.querySelectorAll('#' + group + '-scale .nps-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// Tone card selection
+document.querySelectorAll('.tone-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.tone-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+</script>
+</body>
+</html>

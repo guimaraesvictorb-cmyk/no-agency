@@ -251,6 +251,7 @@ export default function HistoriaPage() {
   const loadMediaFiles = useCallback(async (clientId: string) => {
     try {
       const res = await fetch(`/api/upload/asset?client_id=${clientId}`)
+      if (!res.ok) return
       const data = await res.json()
       if (data.files) setMediaFiles(data.files)
     } catch {}
@@ -275,12 +276,12 @@ export default function HistoriaPage() {
 
   async function handleDeleteFile(id: string) {
     if (!selectedClient) return
-    await fetch("/api/upload/asset", {
+    const res = await fetch("/api/upload/asset", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ media_file_id: id, client_id: selectedClient.id }),
     })
-    setMediaFiles((prev) => prev.filter((f) => f.id !== id))
+    if (res.ok) setMediaFiles((prev) => prev.filter((f) => f.id !== id))
   }
 
   // Load brief when client changes

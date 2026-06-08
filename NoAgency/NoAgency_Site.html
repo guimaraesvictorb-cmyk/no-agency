@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Agency — Seu feed ativo. Todo dia.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink:    #0A0A0A;
+  --cream:  #F0EBE3;
+  --red:    #D64045;
+  --gray:   #8A8582;
+  --lgray:  #E0DBD5;
+  --white:  #FFFFFF;
+  --offwh:  #FAF8F5;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  cursor: none;
+  overflow-x: hidden;
+}
+
+/* ── CURSOR ─────────────────────────────────────────────── */
+.cursor {
+  position: fixed; top:0; left:0; pointer-events:none;
+  z-index:9999; mix-blend-mode: difference;
+  transition: transform .15s ease;
+}
+.cursor-dot {
+  width:10px; height:10px; background:var(--white);
+  border-radius:50%; transform:translate(-50%,-50%);
+  transition: transform .12s ease, width .2s, height .2s;
+}
+.cursor-ring {
+  position:fixed; top:0; left:0; pointer-events:none; z-index:9998;
+  width:40px; height:40px; border:1px solid rgba(255,255,255,.35);
+  border-radius:50%; transform:translate(-50%,-50%);
+  transition: all .35s cubic-bezier(.23,1,.32,1);
+}
+body:has(a:hover) .cursor-ring,
+body:has(button:hover) .cursor-ring { transform:translate(-50%,-50%) scale(2.2); border-color:var(--red); }
+body:has(a:hover) .cursor-dot { transform:translate(-50%,-50%) scale(0); }
+
+/* ── TOP BAR ────────────────────────────────────────────── */
+.topbar {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:0 5vw;
+  display:flex; align-items:center; justify-content:space-between;
+  height:68px;
+  transition: background .4s, backdrop-filter .4s;
+}
+.topbar.scrolled {
+  background: rgba(10,10,10,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.logo {
+  display:flex; align-items:center; gap:12px;
+  text-decoration:none;
+}
+.logo-svg { width:36px; height:36px; }
+.logo-vbar { width:1px; height:26px; background:rgba(200,195,190,.4); }
+.logo-text { display:flex; flex-direction:column; gap:0; line-height:1; }
+.logo-no {
+  font-family:'Poppins',sans-serif; font-weight:700; font-size:13px;
+  color:var(--white); letter-spacing:-.2px; display:flex; align-items:center; gap:3px;
+}
+.logo-dot { width:5px; height:5px; border-radius:50%; background:var(--red); }
+.logo-agency { font-family:'Poppins',sans-serif; font-weight:300; font-size:13px; color:var(--white); }
+
+nav { display:flex; align-items:center; gap:36px; }
+nav a {
+  font-size:12px; font-weight:500; color:rgba(255,255,255,.55);
+  text-decoration:none; letter-spacing:.5px; text-transform:uppercase;
+  transition:color .2s;
+}
+nav a:hover { color:var(--white); }
+
+.nav-cta {
+  background:var(--red); color:var(--white) !important;
+  padding:10px 22px; font-size:11px !important; font-weight:600 !important;
+  border-radius:2px; letter-spacing:1px !important; text-transform:uppercase;
+  transition:background .2s, transform .2s !important;
+}
+.nav-cta:hover { background:#C0383D !important; transform:translateY(-1px); }
+
+/* ── HERO ───────────────────────────────────────────────── */
+.hero {
+  min-height:100vh;
+  display:grid; align-items:center;
+  padding:0 5vw;
+  position:relative; overflow:hidden;
+  background: var(--ink);
+}
+
+.hero-bg-grid {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+}
+
+.hero-bg-red {
+  position:absolute; top:-40%; right:-10%; width:55vw; height:120%;
+  background: radial-gradient(ellipse at 70% 30%, rgba(214,64,69,.18) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+.hero-eyebrow {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:32px;
+  animation: fadeUp .8s .1s both;
+}
+.hero-eyebrow-line { width:32px; height:1px; background:var(--red); }
+.hero-eyebrow-text {
+  font-size:11px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:var(--red);
+}
+
+.hero-headline {
+  font-family:'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 11vw, 158px);
+  line-height:.92;
+  letter-spacing:-1px;
+  margin-bottom:8px;
+  animation: fadeUp .8s .2s both;
+}
+.hero-headline .hl-cream { color:var(--cream); }
+.hero-headline .hl-stroke {
+  -webkit-text-stroke:2px var(--white);
+  color:transparent;
+}
+.hero-headline .hl-red { color:var(--red); }
+
+.hero-sub {
+  font-size:clamp(15px,1.6vw,20px); font-weight:300; line-height:1.65;
+  color:rgba(255,255,255,.55); max-width:520px;
+  margin-bottom:48px;
+  animation: fadeUp .8s .35s both;
+}
+.hero-sub strong { color:var(--white); font-weight:600; }
+
+.hero-actions {
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  animation: fadeUp .8s .5s both;
+}
+
+.btn-primary {
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--red); color:var(--white);
+  padding:16px 32px; font-size:13px; font-weight:700;
+  letter-spacing:.5px; text-transform:uppercase;
+  text-decoration:none; border:none; cursor:none;
+  transition: transform .2s, box-shadow .2s;
+  position:relative; overflow:hidden;
+}
+.btn-primary::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, rgba(255,255,255,.08) 0%, transparent 60%);
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(214,64,69,.4); }
+
+.btn-secondary {
+  display:inline-flex; align-items:center; gap:10px;
+  color:rgba(255,255,255,.7); font-size:13px; font-weight:500;
+  text-decoration:none; border-bottom:1px solid rgba(255,255,255,.2);
+  padding-bottom:2px; transition:color .2s, border-color .2s;
+}
+.btn-secondary:hover { color:var(--white); border-color:var(--white); }
+.btn-arrow { font-size:16px; }
+
+.hero-stats {
+  position:absolute; bottom:48px; right:5vw;
+  display:flex; gap:48px;
+  animation: fadeUp .8s .7s both;
+}
+.hero-stat-num {
+  font-family:'Bebas Neue',sans-serif; font-size:42px;
+  color:var(--white); line-height:1;
+}
+.hero-stat-num span { color:var(--red); }
+.hero-stat-label {
+  font-size:10px; font-weight:500; color:var(--gray);
+  letter-spacing:1.5px; text-transform:uppercase; margin-top:4px;
+}
+
+.hero-scroll {
+  position:absolute; bottom:48px; left:5vw;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  animation: fadeUp .8s .9s both;
+}
+.hero-scroll-line {
+  width:1px; height:48px;
+  background:linear-gradient(to bottom, transparent, rgba(255,255,255,.3));
+  animation: scrollPulse 2s infinite;
+}
+.hero-scroll-text { font-size:9px; letter-spacing:3px; color:var(--gray); text-transform:uppercase; }
+
+/* ── MARQUEE ────────────────────────────────────────────── */
+.marquee-section {
+  padding:20px 0;
+  background:var(--red);
+  overflow:hidden; position:relative;
+}
+.marquee-track {
+  display:flex; gap:0; white-space:nowrap;
+  animation: marquee 18s linear infinite;
+}
+.marquee-item {
+  display:inline-flex; align-items:center; gap:24px;
+  padding:0 24px;
+  font-family:'Bebas Neue',sans-serif; font-size:18px;
+  color:rgba(255,255,255,.85); letter-spacing:2px;
+}
+.marquee-sep { color:rgba(255,255,255,.4); font-size:12px; }
+
+/* ── PROBLEM SECTION ────────────────────────────────────── */
+.section-problem {
+  background:var(--cream);
+  padding:120px 5vw;
+  position:relative;
+}
+.section-label {
+  display:flex; align-items:center; gap:10px; margin-bottom:24px;
+}
+.section-label-line { width:28px; height:1px; background:var(--red); }
+.section-label-text {
+  font-size:10px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:var(--red);
+}
+.problem-headline {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,7vw,96px);
+  line-height:.95; color:var(--ink); letter-spacing:-1px;
+  max-width:820px; margin-bottom:64px;
+}
+.problem-headline em { color:var(--red); font-style:normal; }
+
+.problem-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:var(--lgray);
+  border:1px solid var(--lgray);
+}
+.problem-card {
+  background:var(--offwh); padding:40px 32px;
+  position:relative; overflow:hidden;
+  transition:background .3s;
+}
+.problem-card:hover { background:var(--white); }
+.problem-card::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:3px; background:var(--red);
+  transform:scaleX(0); transform-origin:left;
+  transition:transform .4s cubic-bezier(.23,1,.32,1);
+}
+.problem-card:hover::before { transform:scaleX(1); }
+.problem-x {
+  font-family:'Bebas Neue',sans-serif; font-size:48px;
+  color:var(--red); line-height:1; margin-bottom:16px;
+}
+.problem-title {
+  font-size:15px; font-weight:700; color:var(--ink);
+  margin-bottom:10px; letter-spacing:-.2px;
+}
+.problem-desc { font-size:13px; color:var(--gray); line-height:1.65; }
+
+/* ── HOW IT WORKS ───────────────────────────────────────── */
+.section-how {
+  background:var(--ink); padding:120px 5vw;
+  position:relative; overflow:hidden;
+}
+.how-bg {
+  position:absolute; bottom:-30%; left:-10%; width:60vw; height:100%;
+  background:radial-gradient(ellipse at 20% 80%, rgba(214,64,69,.1) 0%, transparent 60%);
+  pointer-events:none;
+}
+.how-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+.how-left {}
+.how-right { padding-top:80px; }
+.how-headline {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,6vw,84px); line-height:.95;
+  margin-bottom:24px;
+}
+.how-intro { font-size:15px; color:rgba(255,255,255,.55); line-height:1.7; margin-bottom:48px; }
+
+.steps { display:flex; flex-direction:column; gap:0; }
+.step { display:flex; gap:24px; padding:32px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.step:last-child { border-bottom:none; }
+.step-num {
+  font-family:'Bebas Neue',sans-serif; font-size:52px;
+  color:rgba(255,255,255,.08); line-height:1; flex-shrink:0; width:56px;
+  transition:color .3s;
+}
+.step:hover .step-num { color:var(--red); }
+.step-content {}
+.step-title { font-size:15px; font-weight:700; margin-bottom:6px; }
+.step-desc { font-size:13px; color:rgba(255,255,255,.5); line-height:1.65; }
+
+.how-proof {
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+  padding:32px; margin-top:24px;
+}
+.how-proof-quote {
+  font-size:16px; font-weight:300; font-style:italic;
+  line-height:1.65; color:rgba(255,255,255,.8); margin-bottom:16px;
+}
+.how-proof-attr { font-size:12px; color:var(--gray); font-weight:500; letter-spacing:.5px; }
+.how-proof-stars { color:var(--red); font-size:14px; margin-bottom:12px; }
+
+/* ── PLANS ──────────────────────────────────────────────── */
+.section-plans {
+  background:var(--cream); padding:120px 5vw;
+}
+.plans-headline {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,6vw,84px); color:var(--ink); line-height:.95;
+  margin-bottom:12px;
+}
+.plans-sub {
+  font-size:15px; color:var(--gray); max-width:480px;
+  line-height:1.6; margin-bottom:64px;
+}
+
+.plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
+
+.plan-card {
+  padding:48px 36px;
+  border:1px solid var(--lgray);
+  position:relative; overflow:hidden;
+  background:var(--white);
+  transition:transform .3s, box-shadow .3s;
+}
+.plan-card:hover { transform:translateY(-4px); box-shadow:0 24px 60px rgba(10,10,10,.12); }
+.plan-card.featured {
+  background:var(--ink);
+  border-color:var(--ink);
+  transform:translateY(-8px);
+  box-shadow:0 32px 80px rgba(10,10,10,.2);
+  z-index:2;
+}
+.plan-card.featured:hover { transform:translateY(-12px); }
+
+.plan-badge {
+  display:inline-block; background:var(--red);
+  font-size:9px; font-weight:700; letter-spacing:2px; color:var(--white);
+  text-transform:uppercase; padding:4px 10px; margin-bottom:20px;
+}
+.plan-name {
+  font-family:'Bebas Neue',sans-serif; font-size:32px;
+  color:var(--ink); letter-spacing:1px; margin-bottom:4px;
+}
+.plan-card.featured .plan-name { color:var(--white); }
+.plan-name-en { font-size:11px; color:var(--gray); font-weight:500; letter-spacing:1px; margin-bottom:24px; }
+.plan-card.featured .plan-name-en { color:rgba(255,255,255,.4); }
+
+.plan-price-area { margin-bottom:8px; }
+.plan-setup { font-size:11px; color:var(--gray); margin-bottom:4px; }
+.plan-card.featured .plan-setup { color:rgba(255,255,255,.4); }
+.plan-price {
+  font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1;
+  color:var(--ink); display:flex; align-items:flex-start; gap:4px;
+}
+.plan-card.featured .plan-price { color:var(--white); }
+.plan-price-curr { font-size:22px; margin-top:10px; }
+.plan-price-period { font-size:14px; color:var(--gray); align-self:flex-end; margin-bottom:6px; font-weight:400; font-family:'Poppins',sans-serif; }
+.plan-card.featured .plan-price-period { color:rgba(255,255,255,.4); }
+.plan-divider { height:1px; background:var(--lgray); margin:24px 0; }
+.plan-card.featured .plan-divider { background:rgba(255,255,255,.1); }
+
+.plan-features { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:36px; }
+.plan-features li {
+  display:flex; align-items:flex-start; gap:10px;
+  font-size:13px; color:var(--ink); line-height:1.4;
+}
+.plan-card.featured .plan-features li { color:rgba(255,255,255,.8); }
+.plan-check { color:var(--red); font-weight:700; flex-shrink:0; margin-top:1px; }
+.plan-x { color:var(--lgray); flex-shrink:0; margin-top:1px; }
+
+.plan-cta {
+  display:block; text-align:center;
+  padding:14px 24px; font-size:12px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase;
+  text-decoration:none; transition:all .2s;
+  border:2px solid var(--ink); color:var(--ink); background:transparent;
+}
+.plan-cta:hover { background:var(--ink); color:var(--white); }
+.plan-card.featured .plan-cta {
+  background:var(--red); border-color:var(--red); color:var(--white);
+}
+.plan-card.featured .plan-cta:hover { background:#C0383D; border-color:#C0383D; }
+
+/* ── RESULTS ────────────────────────────────────────────── */
+.section-results {
+  background:var(--ink); padding:120px 5vw;
+  position:relative; overflow:hidden;
+}
+.results-grid {
+  display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:1px; background:rgba(255,255,255,.06);
+  margin-top:64px;
+}
+.result-card {
+  background:var(--ink); padding:48px 32px;
+  text-align:center; position:relative;
+  transition:background .3s;
+}
+.result-card:hover { background:rgba(255,255,255,.03); }
+.result-num {
+  font-family:'Bebas Neue',sans-serif; font-size:72px;
+  line-height:1; color:var(--white); margin-bottom:4px;
+}
+.result-num span { color:var(--red); }
+.result-label { font-size:12px; color:var(--gray); letter-spacing:1px; text-transform:uppercase; }
+
+/* ── TESTIMONIALS ───────────────────────────────────────── */
+.section-testimonials {
+  background:var(--cream); padding:120px 5vw;
+}
+.test-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:64px; }
+.test-card {
+  background:var(--white); padding:36px 28px;
+  position:relative;
+  border-left:3px solid var(--red);
+}
+.test-stars { color:var(--red); font-size:14px; margin-bottom:16px; }
+.test-quote { font-size:14px; color:var(--ink); line-height:1.7; margin-bottom:20px; font-style:italic; }
+.test-name { font-size:12px; font-weight:700; color:var(--ink); letter-spacing:.5px; }
+.test-biz { font-size:11px; color:var(--gray); }
+
+/* ── CTA SECTION ────────────────────────────────────────── */
+.section-cta {
+  background:var(--red); padding:100px 5vw;
+  position:relative; overflow:hidden;
+}
+.cta-bg {
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(
+    -45deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px,
+    transparent 1px, transparent 40px);
+}
+.cta-content { position:relative; z-index:1; max-width:680px; }
+.cta-headline {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,7vw,96px); line-height:.92;
+  color:var(--white); margin-bottom:20px;
+}
+.cta-sub { font-size:16px; color:rgba(255,255,255,.75); line-height:1.6; margin-bottom:48px; }
+
+/* ── FORM ───────────────────────────────────────────────── */
+.form-wrap {
+  background:rgba(0,0,0,.2); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15);
+  padding:40px; margin-bottom:24px;
+}
+.form-title { font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:24px; }
+.form-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-field { display:flex; flex-direction:column; gap:6px; }
+.form-field.full { grid-column:1/-1; }
+.form-field label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; opacity:.7; }
+.form-field input {
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  color:var(--white); padding:12px 16px; font-size:14px;
+  font-family:'Poppins',sans-serif; outline:none;
+  transition:border-color .2s, background .2s;
+}
+.form-field input::placeholder { color:rgba(255,255,255,.3); }
+.form-field input:focus { border-color:rgba(255,255,255,.5); background:rgba(255,255,255,.12); }
+.form-submit {
+  grid-column:1/-1; margin-top:8px;
+  background:var(--ink); color:var(--white);
+  padding:16px 32px; font-size:13px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase;
+  border:none; cursor:none; width:100%;
+  transition:background .2s;
+}
+.form-submit:hover { background:#1a1a1a; }
+
+.form-success {
+  display:none; text-align:center; padding:32px;
+  font-size:16px; font-weight:600;
+}
+.form-success.visible { display:block; }
+
+.cta-or { text-align:center; margin:8px 0; font-size:12px; color:rgba(255,255,255,.4); letter-spacing:2px; }
+
+.btn-whatsapp {
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+  color:var(--white); padding:16px 32px;
+  font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  text-decoration:none; width:100%; text-align:center;
+  transition:background .2s, border-color .2s;
+}
+.btn-whatsapp:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.4); }
+.wa-icon { font-size:18px; }
+
+/* ── FAQ ────────────────────────────────────────────────── */
+.section-faq { background:var(--ink); padding:120px 5vw; }
+.faq-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; margin-top:64px; }
+.faq-item {
+  padding:28px 0; border-bottom:1px solid rgba(255,255,255,.06);
+  cursor:none;
+}
+.faq-item:nth-child(odd) { padding-right:48px; }
+.faq-item:nth-child(even) { padding-left:48px; border-left:1px solid rgba(255,255,255,.06); }
+.faq-q {
+  font-size:14px; font-weight:600; color:var(--white);
+  display:flex; justify-content:space-between; align-items:start;
+  gap:16px; margin-bottom:0;
+}
+.faq-toggle { color:var(--red); font-size:18px; flex-shrink:0; transition:transform .3s; }
+.faq-item.open .faq-toggle { transform:rotate(45deg); }
+.faq-a {
+  font-size:13px; color:rgba(255,255,255,.5); line-height:1.7;
+  max-height:0; overflow:hidden; transition:max-height .4s ease, margin-top .3s;
+}
+.faq-item.open .faq-a { max-height:200px; margin-top:12px; }
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+footer {
+  background:#050505; padding:60px 5vw 32px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-top {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr; gap:48px;
+  padding-bottom:48px; border-bottom:1px solid rgba(255,255,255,.06);
+  margin-bottom:32px;
+}
+.footer-brand-text {
+  font-size:13px; color:rgba(255,255,255,.4); line-height:1.7; margin-top:16px;
+}
+.footer-col h4 {
+  font-size:10px; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:rgba(255,255,255,.3); margin-bottom:16px;
+}
+.footer-col a {
+  display:block; font-size:13px; color:rgba(255,255,255,.5);
+  text-decoration:none; margin-bottom:8px; transition:color .2s;
+}
+.footer-col a:hover { color:var(--white); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+}
+.footer-copy { font-size:12px; color:rgba(255,255,255,.25); }
+.footer-langs { display:flex; gap:16px; }
+.footer-langs a {
+  font-size:11px; color:rgba(255,255,255,.25); text-decoration:none;
+  transition:color .2s; letter-spacing:.5px;
+}
+.footer-langs a:hover { color:rgba(255,255,255,.6); }
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.8);
+  backdrop-filter:blur(8px); z-index:1000;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--ink); border:1px solid rgba(255,255,255,.1);
+  padding:48px; max-width:480px; width:90%;
+  transform:translateY(20px); transition:transform .3s;
+}
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-close {
+  position:absolute; top:16px; right:20px;
+  font-size:24px; color:rgba(255,255,255,.4);
+  cursor:none; background:none; border:none;
+  transition:color .2s; line-height:1;
+}
+.modal-close:hover { color:var(--white); }
+.modal-title { font-family:'Bebas Neue',sans-serif; font-size:36px; margin-bottom:6px; }
+.modal-sub { font-size:13px; color:rgba(255,255,255,.5); margin-bottom:28px; }
+.modal .form-fields { grid-template-columns:1fr; }
+.modal .form-field { grid-column:1; }
+
+/* ── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes marquee {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
+@keyframes scrollPulse {
+  0%,100% { opacity:.3; } 50% { opacity:.8; }
+}
+
+.reveal {
+  opacity:0; transform:translateY(32px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity:1; transform:translateY(0); }
+.reveal-delay-1 { transition-delay:.1s; }
+.reveal-delay-2 { transition-delay:.2s; }
+.reveal-delay-3 { transition-delay:.3s; }
+
+/* ── MOBILE ─────────────────────────────────────────────── */
+@media (max-width:768px) {
+  .hero-stats { display:none; }
+  .problem-grid, .how-grid, .plans-grid,
+  .results-grid, .test-grid, .faq-grid,
+  .footer-top { grid-template-columns:1fr; }
+  .plans-grid { gap:16px; }
+  .plan-card.featured { transform:none; }
+  .form-fields { grid-template-columns:1fr; }
+  nav { display:none; }
+  .how-right { padding-top:0; }
+  .faq-item:nth-child(even) { padding-left:0; border-left:none; }
+  .faq-item:nth-child(odd) { padding-right:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"><div class="cursor-dot"></div></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- TOPBAR -->
+<header class="topbar" id="topbar">
+  <a href="#" class="logo">
+    <svg class="logo-svg" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="6.5" fill="white"/>
+      <circle cx="20" cy="8"  r="4.2" fill="white"/>
+      <circle cx="20" cy="32" r="4.2" fill="#D64045"/>
+      <circle cx="30" cy="14" r="4.2" fill="white"/>
+      <circle cx="10" cy="14" r="4.2" fill="white"/>
+      <circle cx="30" cy="26" r="4.2" fill="white"/>
+      <circle cx="10" cy="26" r="4.2" fill="white"/>
+    </svg>
+    <div class="logo-vbar"></div>
+    <div class="logo-text">
+      <div class="logo-no">NO <div class="logo-dot"></div></div>
+      <div class="logo-agency">AGENCY</div>
+    </div>
+  </a>
+  <nav>
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#planos">Planos</a>
+    <a href="#resultados">Resultados</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contato" class="nav-cta">Começar agora</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-red"></div>
+  <div>
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-line"></div>
+      <div class="hero-eyebrow-text">AI-Powered Social Media · Instagram & Facebook</div>
+    </div>
+    <h1 class="hero-headline">
+      <span class="hl-cream">SEU FEED</span><br>
+      <span class="hl-stroke">ATIVO.</span><br>
+      <span class="hl-red">TODO DIA.</span>
+    </h1>
+    <p class="hero-sub">
+      <strong>Sem agência. Sem aprovações infinitas. Sem tempo perdido.</strong><br>
+      Você conta a história do seu negócio uma vez.<br>
+      A No Agency cuida do resto — para sempre.
+    </p>
+    <div class="hero-actions">
+      <a href="#contato" class="btn-primary">
+        Quero começar agora
+        <span>→</span>
+      </a>
+      <a href="https://wa.me/5511999999999?text=Quero+saber+mais+sobre+a+No+Agency" target="_blank" class="btn-secondary">
+        Falar no WhatsApp <span class="btn-arrow">↗</span>
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-num">17<span>M</span></div>
+      <div class="hero-stat-label">negócios sem social media ativo</div>
+    </div>
+    <div>
+      <div class="hero-stat-num">R$<span>0</span></div>
+      <div class="hero-stat-label">trabalho adicional pra você</div>
+    </div>
+    <div>
+      <div class="hero-stat-num">30<span>×</span></div>
+      <div class="hero-stat-label">posts por mês, automáticos</div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <div class="hero-scroll-text">scroll</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">SEU NEGÓCIO MERECE APARECER <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">CONTEÚDO CRIADO POR IA <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">PUBLICADO AUTOMATICAMENTE <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">ZERO TRABALHO SEU <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">YOUR BRAND ON AUTOPILOT <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">NO AGENCY. NO HASSLE. <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">SEU NEGÓCIO MERECE APARECER <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">CONTEÚDO CRIADO POR IA <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">PUBLICADO AUTOMATICAMENTE <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">ZERO TRABALHO SEU <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">YOUR BRAND ON AUTOPILOT <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">NO AGENCY. NO HASSLE. <span class="marquee-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="section-problem">
+  <div class="section-label reveal">
+    <div class="section-label-line"></div>
+    <div class="section-label-text">O problema</div>
+  </div>
+  <h2 class="problem-headline reveal">
+    O MERCADO ESQUECEU<br>
+    DE <em>VOCÊ.</em>
+  </h2>
+  <div class="problem-grid">
+    <div class="problem-card reveal">
+      <div class="problem-x">✗</div>
+      <div class="problem-title">Agência custa uma fortuna</div>
+      <div class="problem-desc">R$1.500 a R$5.000 por mês para posts que não soam como você. Reuniões. Aprovações. Revisões. E no final, o post sai errado.</div>
+    </div>
+    <div class="problem-card reveal reveal-delay-1">
+      <div class="problem-x">✗</div>
+      <div class="problem-title">Fazer sozinho não funciona</div>
+      <div class="problem-desc">Você começa firme. Em dois meses some do Instagram. Não é falta de vontade — é falta de tempo. Você tem um negócio pra tocar.</div>
+    </div>
+    <div class="problem-card reveal reveal-delay-2">
+      <div class="problem-x">✗</div>
+      <div class="problem-title">"Kit de IA" é papo de guru</div>
+      <div class="problem-desc">Querem te ensinar a usar ChatGPT. Ótimo — você vira o estagiário de marketing do seu próprio negócio. Isso não é solução.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section-how" id="como-funciona">
+  <div class="how-bg"></div>
+  <div class="how-grid">
+    <div class="how-left">
+      <div class="section-label reveal">
+        <div class="section-label-line"></div>
+        <div class="section-label-text">Como funciona</div>
+      </div>
+      <h2 class="how-headline reveal">VOCÊ<br>CONTA.<br><span style="color:var(--red)">NÓS<br>FAZEMOS.</span></h2>
+      <p class="how-intro reveal">Uma conversa de 15 minutos. A IA aprende a voz do seu negócio. A partir daí, o conteúdo aparece — sem você mover um dedo.</p>
+      <div class="how-proof reveal">
+        <div class="how-proof-stars">★★★★★</div>
+        <div class="how-proof-quote">"Parece que contratei um time inteiro de marketing. Mas pago menos que um freelancer e não preciso gerenciar ninguém."</div>
+        <div class="how-proof-attr">— Camila R., clínica de estética, Campinas SP</div>
+      </div>
+    </div>
+    <div class="how-right">
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <div class="step-title">Você conta sua história</div>
+            <div class="step-desc">Um chat guiado pela IA — sem formulário, sem jargão. Você explica o que faz, para quem, como fala. 15 minutos. Só isso.</div>
+          </div>
+        </div>
+        <div class="step reveal reveal-delay-1">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <div class="step-title">A IA monta o calendário</div>
+            <div class="step-desc">Dois meses de conteúdo gerado automaticamente. Textos, artes, hashtags, horários. Tudo no tom da sua marca.</div>
+          </div>
+        </div>
+        <div class="step reveal reveal-delay-2">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <div class="step-title">Você aprova com 1 clique</div>
+            <div class="step-desc">Recebe um e-mail com os posts da semana. Abre. Aprova. Fecha. Em 2 minutos. Sem login, sem complicação.</div>
+          </div>
+        </div>
+        <div class="step reveal reveal-delay-3">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <div class="step-title">Os posts aparecem no ar</div>
+            <div class="step-desc">Instagram e Facebook atualizados automaticamente, no melhor horário para o seu público. Relatório semanal na sua caixa toda segunda-feira.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="section-plans" id="planos">
+  <div class="section-label reveal">
+    <div class="section-label-line"></div>
+    <div class="section-label-text">Planos</div>
+  </div>
+  <h2 class="plans-headline reveal">ESCOLHA<br>SEU PLANO.</h2>
+  <p class="plans-sub reveal">Sem contrato de fidelidade. Cancele quando quiser. O setup é cobrado uma vez.</p>
+
+  <div class="plans-grid">
+    <!-- ESSENCIAL -->
+    <div class="plan-card reveal">
+      <div class="plan-name">ESSENCIAL</div>
+      <div class="plan-name-en">ESSENTIAL</div>
+      <div class="plan-price-area">
+        <div class="plan-setup">Setup único: R$ 597</div>
+        <div class="plan-price">
+          <span class="plan-price-curr">R$</span>
+          297
+          <span class="plan-price-period">/mês</span>
+        </div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="plan-check">✓</span> 1 rede social (Instagram ou Facebook)</li>
+        <li><span class="plan-check">✓</span> 12 posts por mês</li>
+        <li><span class="plan-check">✓</span> Artes criadas por IA</li>
+        <li><span class="plan-check">✓</span> Aprovação semanal por e-mail</li>
+        <li><span class="plan-check">✓</span> Calendário editorial 2 meses</li>
+        <li><span class="plan-check">✓</span> Publicação automática</li>
+        <li><span class="plan-x">✗</span> Stories</li>
+        <li><span class="plan-x">✗</span> Relatório semanal</li>
+      </ul>
+      <a href="#contato" class="plan-cta">Começar agora</a>
+    </div>
+
+    <!-- CRESCIMENTO -->
+    <div class="plan-card featured reveal reveal-delay-1">
+      <div class="plan-badge">Mais escolhido</div>
+      <div class="plan-name">CRESCIMENTO</div>
+      <div class="plan-name-en">GROWTH</div>
+      <div class="plan-price-area">
+        <div class="plan-setup">Setup único: R$ 997</div>
+        <div class="plan-price">
+          <span class="plan-price-curr">R$</span>
+          497
+          <span class="plan-price-period">/mês</span>
+        </div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="plan-check">✓</span> Instagram + Facebook</li>
+        <li><span class="plan-check">✓</span> 20 posts por mês</li>
+        <li><span class="plan-check">✓</span> Stories semanais (3–4/semana)</li>
+        <li><span class="plan-check">✓</span> Artes criadas por IA</li>
+        <li><span class="plan-check">✓</span> Aprovação semanal por e-mail</li>
+        <li><span class="plan-check">✓</span> Calendário editorial 2 meses</li>
+        <li><span class="plan-check">✓</span> Publicação automática</li>
+        <li><span class="plan-check">✓</span> Relatório semanal completo</li>
+      </ul>
+      <a href="#contato" class="plan-cta">Quero o Crescimento</a>
+    </div>
+
+    <!-- PRESENÇA TOTAL -->
+    <div class="plan-card reveal reveal-delay-2">
+      <div class="plan-name">PRESENÇA<br>TOTAL</div>
+      <div class="plan-name-en">FULL PRESENCE</div>
+      <div class="plan-price-area">
+        <div class="plan-setup">Setup único: R$ 1.497</div>
+        <div class="plan-price">
+          <span class="plan-price-curr">R$</span>
+          797
+          <span class="plan-price-period">/mês</span>
+        </div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="plan-check">✓</span> Instagram + Facebook + Google</li>
+        <li><span class="plan-check">✓</span> 30 posts por mês</li>
+        <li><span class="plan-check">✓</span> Stories diários</li>
+        <li><span class="plan-check">✓</span> Google Meu Negócio</li>
+        <li><span class="plan-check">✓</span> Reels roteirizados</li>
+        <li><span class="plan-check">✓</span> Aprovação urgente em 6h</li>
+        <li><span class="plan-check">✓</span> Relatório semanal + mensal PDF</li>
+        <li><span class="plan-check">✓</span> Aprendizado avançado de marca</li>
+      </ul>
+      <a href="#contato" class="plan-cta">Começar agora</a>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="section-results" id="resultados">
+  <div class="section-label reveal">
+    <div class="section-label-line"></div>
+    <div class="section-label-text">Números reais</div>
+  </div>
+  <h2 class="how-headline reveal" style="max-width:600px">O QUE A NO AGENCY<br>ENTREGA.</h2>
+  <div class="results-grid">
+    <div class="result-card reveal">
+      <div class="result-num">30<span>×</span></div>
+      <div class="result-label">posts publicados por mês</div>
+    </div>
+    <div class="result-card reveal reveal-delay-1">
+      <div class="result-num"><span>+</span>847</div>
+      <div class="result-label">seguidores médios em 90 dias</div>
+    </div>
+    <div class="result-card reveal reveal-delay-2">
+      <div class="result-num">15<span>min</span></div>
+      <div class="result-label">de trabalho seu por mês</div>
+    </div>
+    <div class="result-card reveal reveal-delay-3">
+      <div class="result-num"><span>&lt;</span>2h</div>
+      <div class="result-label">para gerar ajuste quando pedido</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section-testimonials">
+  <div class="section-label reveal">
+    <div class="section-label-line"></div>
+    <div class="section-label-text">Clientes reais</div>
+  </div>
+  <h2 class="problem-headline reveal" style="margin-bottom:0">O QUE DIZEM<br>QUEM USA.</h2>
+  <div class="test-grid">
+    <div class="test-card reveal">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">"Em 3 meses meu Instagram passou de fantasma para cheio de seguidores locais. Nunca escrevi uma legenda. Só aprovei os posts pelo celular."</div>
+      <div class="test-name">RAFAEL M.</div>
+      <div class="test-biz">Barbearia — Belo Horizonte, MG</div>
+    </div>
+    <div class="test-card reveal reveal-delay-1">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">"Minha clínica ganhou 400 seguidores novos no primeiro mês e já tive 3 pacientes novos que me encontraram pelo Instagram. Vale cada centavo."</div>
+      <div class="test-name">DRA. JULIANA C.</div>
+      <div class="test-biz">Clínica de Estética — São Paulo, SP</div>
+    </div>
+    <div class="test-card reveal reveal-delay-2">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">"Antes eu gastava R$1.800 por mês numa agência que me ignorava. Hoje pago R$497 e o conteúdo é melhor. Não tem comparação."</div>
+      <div class="test-name">MARCOS T.</div>
+      <div class="test-biz">Restaurante — Florianópolis, SC</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA + FORM -->
+<section class="section-cta" id="contato">
+  <div class="cta-bg"></div>
+  <div class="cta-content">
+    <h2 class="cta-headline">SEU NEGÓCIO<br>MERECE<br>APARECER.</h2>
+    <p class="cta-sub">Preencha seus dados e entraremos em contato em até 2 horas para explicar tudo e montar seu plano.</p>
+
+    <div class="form-wrap" id="formWrap">
+      <div class="form-title">Quero começar agora →</div>
+      <div id="formSuccess" class="form-success">
+        ✓ Recebemos! Falaremos com você em até 2 horas.
+      </div>
+      <form id="leadForm">
+        <div class="form-fields">
+          <div class="form-field">
+            <label>Nome completo</label>
+            <input type="text" name="nome" placeholder="Seu nome" required>
+          </div>
+          <div class="form-field">
+            <label>WhatsApp</label>
+            <input type="tel" name="telefone" placeholder="(11) 99999-9999" required>
+          </div>
+          <div class="form-field full">
+            <label>E-mail</label>
+            <input type="email" name="email" placeholder="seu@email.com" required>
+          </div>
+          <div class="form-field full">
+            <label>Nome do negócio e segmento</label>
+            <input type="text" name="negocio" placeholder="Ex: Salão da Ana — Beleza e estética">
+          </div>
+          <button type="submit" class="form-submit">
+            Quero meu conteúdo automático →
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="cta-or">— ou fale direto —</div>
+
+    <a href="https://wa.me/5511999999999?text=Oi%21+Vim+pelo+site+da+No+Agency+e+quero+saber+mais." 
+       target="_blank" class="btn-whatsapp">
+      <span class="wa-icon">💬</span>
+      Falar no WhatsApp agora
+    </a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section-faq" id="faq">
+  <div class="section-label reveal">
+    <div class="section-label-line"></div>
+    <div class="section-label-text">Perguntas frequentes</div>
+  </div>
+  <h2 class="how-headline reveal">AINDA<br>TEM DÚVIDA?</h2>
+  <div class="faq-grid" id="faqGrid">
+    <div class="faq-item">
+      <div class="faq-q">Preciso aprovar cada post? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Você recebe um link por e-mail toda semana com os posts da semana seguinte. Clica em "aprovar tudo" e acabou. Se não responder em 7 dias, os posts são publicados automaticamente — seu feed nunca para.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">O conteúdo vai soar genérico? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Não. O onboarding captura o tom de voz, os diferenciais e a personalidade do seu negócio. A IA aprende a voz da sua marca a cada aprovação — no terceiro mês o conteúdo é praticamente indistinguível de algo escrito por você.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Posso pedir um post urgente? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Sim. Pelo chat da plataforma você solicita um post urgente e a IA gera em até 2 horas. No plano Presença Total o prazo de aprovação urgente é de 6 horas.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">E as fotos do meu negócio? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Você recebe uma pasta compartilhada (Google Drive) onde envia suas fotos quando quiser. A IA prioriza suas fotos reais na geração de conteúdo. Quando não houver foto disponível, gera artes profissionais.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Tem contrato de fidelidade? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Não. Você pode cancelar a qualquer momento sem multa. O único valor não reembolsável é o setup, que cobre o trabalho de onboarding e configuração inicial.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Como a IA aprende minha marca? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Cada post que você aprova, edita ou rejeita atualiza o perfil da sua marca automaticamente. O sistema aprende o que funciona e o que não funciona — sem você precisar explicar de novo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <a href="#" class="logo" style="display:inline-flex">
+        <svg width="32" height="32" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="6.5" fill="white" opacity=".7"/>
+          <circle cx="20" cy="8"  r="4.2" fill="white" opacity=".5"/>
+          <circle cx="20" cy="32" r="4.2" fill="#D64045"/>
+          <circle cx="30" cy="14" r="4.2" fill="white" opacity=".5"/>
+          <circle cx="10" cy="14" r="4.2" fill="white" opacity=".5"/>
+          <circle cx="30" cy="26" r="4.2" fill="white" opacity=".5"/>
+          <circle cx="10" cy="26" r="4.2" fill="white" opacity=".5"/>
+        </svg>
+        <div class="logo-vbar" style="margin:0 10px"></div>
+        <div class="logo-text">
+          <div class="logo-no" style="font-size:12px;opacity:.7">NO <div class="logo-dot"></div></div>
+          <div class="logo-agency" style="font-size:12px;opacity:.5">AGENCY</div>
+        </div>
+      </a>
+      <div class="footer-brand-text">Social media automático para pequenos negócios. Powered by AI.</div>
+    </div>
+    <div class="footer-col">
+      <h4>Produto</h4>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#planos">Planos e preços</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Empresa</h4>
+      <a href="#">Sobre a No Agency</a>
+      <a href="#">Blog</a>
+      <a href="#">Cases de sucesso</a>
+      <a href="#">Contato</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contato</h4>
+      <a href="https://wa.me/5511999999999" target="_blank">WhatsApp</a>
+      <a href="mailto:oi@noagency.io">oi@noagency.io</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 No Agency. Todos os direitos reservados.</div>
+    <div class="footer-langs">
+      <a href="#">PT</a>
+      <a href="#">EN</a>
+      <a href="#">ES</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── CURSOR ─────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+})();
+
+// ── TOPBAR SCROLL ─────────────────────────────────────────
+const topbar = document.getElementById('topbar');
+window.addEventListener('scroll', () => {
+  topbar.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── REVEAL ON SCROLL ──────────────────────────────────────
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold:.12 });
+reveals.forEach(el => observer.observe(el));
+
+// ── FAQ ACCORDION ─────────────────────────────────────────
+document.querySelectorAll('.faq-item').forEach(item => {
+  item.querySelector('.faq-q').addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if(!isOpen) item.classList.add('open');
+  });
+});
+
+// ── LEAD FORM ─────────────────────────────────────────────
+document.getElementById('leadForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data = new FormData(this);
+  // Here you would send to your backend / webhook
+  // fetch('/api/lead', { method:'POST', body: JSON.stringify(Object.fromEntries(data)) })
+  document.getElementById('leadForm').style.display = 'none';
+  const success = document.getElementById('formSuccess');
+  success.classList.add('visible');
+  // Optionally redirect to WhatsApp after 2s
+  setTimeout(() => {
+    const nome  = data.get('nome') || '';
+    const tel   = data.get('telefone') || '';
+    const msg   = encodeURIComponent(`Oi! Sou ${nome}. Acabei de me cadastrar no site da No Agency e quero saber mais!`);
+    window.open(`https://wa.me/5511999999999?text=${msg}`, '_blank');
+  }, 2000);
+});
+
+// ── PHONE MASK ────────────────────────────────────────────
+const telInput = document.querySelector('input[name="telefone"]');
+if(telInput) {
+  telInput.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').substring(0,11);
+    if(v.length>=7) v=`(${v.substring(0,2)}) ${v.substring(2,7)}-${v.substring(7)}`;
+    else if(v.length>=3) v=`(${v.substring(0,2)}) ${v.substring(2)}`;
+    else if(v.length>0) v=`(${v}`;
+    this.value=v;
+  });
+}
+
+// ── SMOOTH ANCHOR ─────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if(target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>

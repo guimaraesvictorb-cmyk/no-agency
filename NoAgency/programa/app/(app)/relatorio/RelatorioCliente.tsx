@@ -69,6 +69,7 @@ export default function RelatorioCliente({ clientId, clientName }: { clientId: s
     const { from, to } = getPeriodDates(p)
     try {
       const res = await fetch(`/api/relatorio?client_id=${clientId}&from=${from}&to=${to}`)
+      if (!res.ok) return
       const data = await res.json()
       if (data.metrics) setMetrics(data.metrics)
     } finally {

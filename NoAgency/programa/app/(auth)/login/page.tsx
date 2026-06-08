@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
+import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import LogoCluster from "@/components/ui/LogoCluster"
 
@@ -100,6 +101,11 @@ export default function LoginPage() {
             </div>
             <span className="font-bebas text-xl text-cream tracking-widest">NO AGENCY</span>
           </div>
+
+          <Link href="/" className="inline-flex items-center gap-1.5 text-[12px] text-stone hover:text-white transition-colors mb-8">
+            <ArrowLeft size={13} />
+            Voltar ao site
+          </Link>
 
           <h2 className="font-bebas text-[38px] text-white leading-none mb-1">Entrar na plataforma</h2>
           <p className="text-stone text-[13px] mb-9">Acesse sua conta No Agency</p>

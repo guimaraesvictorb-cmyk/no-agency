@@ -83,7 +83,7 @@ function StatusDot({ status }: { status: string }) {
   )
 }
 
-async function AdminDashboard({ userId }: { userId: string }) {
+async function AdminDashboard({ userId, fullName }: { userId: string; fullName: string }) {
   const supabase = await createClient()
 
   const [{ data: clients }, { data: posts }, { data: npsRows }] = await Promise.all([
@@ -110,7 +110,7 @@ async function AdminDashboard({ userId }: { userId: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-bebas text-[40px] text-white leading-none mb-1">Bom dia, Victor 👋</h1>
+        <h1 className="font-bebas text-[40px] text-white leading-none mb-1">Bom dia, {fullName} 👋</h1>
         <p className="text-[13px] text-stone">Administrador · No Agency</p>
       </div>
 
@@ -189,7 +189,7 @@ async function AdminDashboard({ userId }: { userId: string }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-semibold text-white truncate">
-                    {post.caption.split("\n")[0].replace(/[*#]/g, "")}
+                    {(post.caption ?? "").split("\n")[0].replace(/[*#]/g, "")}
                   </div>
                   <div className="text-[11px] text-stone mt-0.5">
                     {clientMap[post.client_id] ?? "—"} · {post.platform}
@@ -228,7 +228,7 @@ async function AdminDashboard({ userId }: { userId: string }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-semibold text-white truncate">
-                    {post.caption.split("\n")[0].replace(/[*#]/g, "")}
+                    {(post.caption ?? "").split("\n")[0].replace(/[*#]/g, "")}
                   </div>
                   <div className="text-[11px] text-stone mt-0.5">
                     {clientMap[post.client_id] ?? "—"} ·{" "}
@@ -370,7 +370,7 @@ async function ClientDashboard({ userId }: { userId: string }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-semibold text-white truncate">
-                    {post.caption.split("\n")[0].replace(/[*#]/g, "")}
+                    {(post.caption ?? "").split("\n")[0].replace(/[*#]/g, "")}
                   </div>
                   <div className="text-[11px] text-stone mt-0.5">{post.platform}</div>
                 </div>
@@ -402,7 +402,7 @@ async function ClientDashboard({ userId }: { userId: string }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-semibold text-white truncate">
-                    {post.caption.split("\n")[0].replace(/[*#]/g, "")}
+                    {(post.caption ?? "").split("\n")[0].replace(/[*#]/g, "")}
                   </div>
                   <div className="text-[11px] text-stone mt-0.5">
                     {post.scheduled_for
@@ -430,7 +430,8 @@ export default async function DashboardPage() {
   if (!profile) redirect("/login")
 
   if (profile.role === "admin" || profile.role === "manager") {
-    return <AdminDashboard userId={profile.id} />
+    const name = profile.full_name ?? profile.email.split("@")[0]
+    return <AdminDashboard userId={profile.id} fullName={name} />
   }
 
   return <ClientDashboard userId={profile.id} />

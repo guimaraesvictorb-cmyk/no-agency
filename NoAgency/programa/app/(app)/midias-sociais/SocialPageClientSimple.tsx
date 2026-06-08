@@ -34,6 +34,7 @@ export default function SocialPageClientSimple({
     setLoading(true)
     try {
       const res = await fetch(`/api/social-connections?client_id=${clientId}`)
+      if (!res.ok) return
       const data = await res.json()
       if (data.connections) setConnections(data.connections)
     } finally {

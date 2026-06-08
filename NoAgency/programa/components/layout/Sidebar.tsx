@@ -80,8 +80,7 @@ const NAV_CLIENT = [
   {
     section: "Mídia",
     items: [
-      { href: "/pasta-de-midias", label: "Pasta de Mídias", icon: Images   },
-      { href: "/configuracoes",   label: "Configurações",   icon: Settings },
+      { href: "/configuracoes", label: "Configurações", icon: Settings },
     ],
   },
 ]
@@ -126,8 +125,9 @@ export default function Sidebar({ profile, clients = [] }: { profile: Profile; c
       style={{ background: "var(--ink-2)", borderRight: "1px solid var(--border)" }}
     >
       {/* Brand */}
-      <div
-        className="px-5 py-6 flex items-center gap-2.5"
+      <Link
+        href="/dashboard"
+        className="px-5 py-6 flex items-center gap-2.5 hover:opacity-80 transition-opacity"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
         <LogoCluster size={28} variant="dark" />
@@ -138,7 +138,7 @@ export default function Sidebar({ profile, clients = [] }: { profile: Profile; c
           <div className="text-white font-light text-[13px]">AGENCY</div>
           <div className="text-stone text-[9px] uppercase tracking-widest mt-0.5">AI-Powered</div>
         </div>
-      </div>
+      </Link>
 
       {/* User info */}
       <div
